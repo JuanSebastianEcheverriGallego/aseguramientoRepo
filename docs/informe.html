@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Caso Práctico Final - Aseguramiento de la Calidad - TaskApp</title>
+<style>
+  @page { size: Letter; margin: 2cm 1.8cm; }
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 10.5pt; line-height: 1.45; color: #111; }
+  h1 { font-size: 17pt; border-bottom: 2px solid #1f4e79; padding-bottom: 4px; color: #1f4e79; page-break-before: always; }
+  h2 { font-size: 13pt; color: #1f4e79; margin-top: 1.2em; }
+  h3 { font-size: 11pt; margin-bottom: .3em; }
+  table { border-collapse: collapse; width: 100%; margin: .6em 0 1em; font-size: 9pt; page-break-inside: auto; }
+  tr { page-break-inside: avoid; }
+  th, td { border: 1px solid #999; padding: 3px 5px; vertical-align: top; text-align: left; }
+  th { background: #dde7f2; }
+  td.k { background: #f2f2f2; font-weight: 600; width: 22%; }
+  pre { background: #f5f5f5; border: 1px solid #ddd; padding: 6px 8px; font-size: 8pt; white-space: pre-wrap; word-break: break-all; page-break-inside: avoid; }
+  code { font-family: Consolas, monospace; font-size: 9pt; }
+  img { max-width: 100%; border: 1px solid #bbb; margin: .3em 0; }
+  figure { margin: .6em 0 1em; page-break-inside: avoid; }
+  figcaption { font-size: 8.5pt; color: #444; text-align: center; }
+  .ok { color: #1a7f37; font-weight: 700; }
+  .fail { color: #c62828; font-weight: 700; }
+  .cover { text-align: center; padding-top: 5cm; }
+  .cover h1 { page-break-before: avoid; border: none; font-size: 22pt; }
+  .cover p { font-size: 12pt; }
+  .tc { margin-bottom: 1em; page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<!-- 1. PORTADA -->
+<div class="cover">
+  <p><b>INSTITUCIÓN UNIVERSITARIA ITM</b><br>Ingeniería de Sistemas</p>
+  <p style="margin-top:1.5cm"><b>ASEGURAMIENTO DE LA CALIDAD</b></p>
+  <h1>Caso Práctico Final:<br>Aseguramiento de la calidad del sistema TaskApp</h1>
+  <p style="margin-top:2cm"><b>Integrantes</b><br>
+    [Nombre Integrante 1] – [Documento]<br>
+    [Nombre Integrante 2] – [Documento]<br>
+    [Nombre Integrante 3] – [Documento]</p>
+  <p style="margin-top:2cm">Medellín, noviembre de 2026</p>
+  <p style="font-size:10pt">Repositorio: <a href="https://github.com/JuanSebastianEcheverriGallego/aseguramientoRepo">https://github.com/JuanSebastianEcheverriGallego/aseguramientoRepo</a></p>
+</div>
+
+<!-- 2. INTRODUCCIÓN -->
+<h1>2. Introducción</h1>
+<p><b>Presentación del proyecto.</b> TaskApp es una aplicación web de gestión de tareas personales. Permite a un usuario registrarse, iniciar sesión y administrar su lista de tareas (crear, listar, marcar como completada y eliminar), asignando a cada tarea una prioridad de 1 a 5. Está compuesta por una API REST en Node.js/Express, una base de datos SQLite y una interfaz web en HTML/JavaScript.</p>
+<p><b>Objetivo general.</b> Planificar, diseñar, ejecutar y documentar actividades de aseguramiento de la calidad sobre TaskApp —pruebas funcionales y no funcionales, automatización, gestión de defectos, pruebas de seguridad basadas en OWASP Top 10 y métricas de calidad— para evaluar su nivel de calidad y mejorarlo con base en evidencia.</p>
+<p><b>Justificación.</b> Se eligió un sistema pequeño pero completo porque: (1) tiene los elementos típicos de una aplicación real (autenticación, control de acceso, persistencia, validación de entradas, interfaz web), lo que permite aplicar todas las técnicas del curso; (2) el código fuente está disponible, lo que habilita pruebas unitarias, cobertura y análisis estático con SonarQube; (3) puede ejecutarse localmente sin costo, lo que permite análisis dinámico con OWASP ZAP sin riesgos legales; y (4) su tamaño permite cerrar el ciclo completo: detectar defectos, corregirlos y volver a verificar.</p>
+
+<!-- 3. CONTEXTO -->
+<h1>3. Contexto del Proyecto</h1>
+<h2>3.1 Funcionalidad general y problema que resuelve</h2>
+<p>Las personas suelen manejar sus pendientes en notas sueltas sin priorización ni seguimiento. TaskApp centraliza los pendientes de cada usuario, los ordena por prioridad y permite marcar avances, garantizando que cada usuario solo vea y modifique sus propias tareas.</p>
+<h2>3.2 Arquitectura</h2>
+<p>Arquitectura <b>cliente-servidor monolítica en capas</b>: un único proceso Node.js sirve tanto la interfaz estática como la API REST; la persistencia es una base de datos SQLite embebida.</p>
+<pre>
+ ┌──────────────────────┐   HTTP/JSON (Bearer token)   ┌──────────────────────────────────────┐
+ │  Navegador (cliente) │ ───────────────────────────▶ │  Servidor Node.js + Express          │
+ │  public/index.html   │ ◀─────────────────────────── │  ├─ Middleware seguridad (cabeceras) │
+ │  public/app.js       │                               │  ├─ Rutas /api/register, /api/login  │
+ └──────────────────────┘                               │  ├─ Rutas /api/tasks (auth)          │
+                                                        │  ├─ validators.js (reglas negocio)  │
+                                                        │  └─ db.js ──▶ SQLite (taskapp.db)    │
+                                                        └──────────────────────────────────────┘
+</pre>
+<h2>3.3 Tecnologías</h2>
+<table>
+<tr><th>Capa</th><th>Tecnología</th></tr>
+<tr><td>Frontend</td><td>HTML5, CSS, JavaScript (vanilla, Fetch API)</td></tr>
+<tr><td>Backend</td><td>Node.js 22, Express 4</td></tr>
+<tr><td>Base de datos</td><td>SQLite (módulo nativo <code>node:sqlite</code>)</td></tr>
+<tr><td>Seguridad</td><td>Hash de contraseñas con <code>scrypt</code> + sal, tokens aleatorios de 256 bits</td></tr>
+<tr><td>Pruebas</td><td>node:test (unitarias/integración), Playwright (E2E UI), autocannon (carga), SonarQube Community (estático), OWASP ZAP 2.17 (dinámico)</td></tr>
+<tr><td>Infraestructura</td><td>Git/GitHub, GitHub Actions (CI), Docker (SonarQube, Sonar Scanner, ZAP)</td></tr>
+</table>
+<h2>3.4 Alcance funcional cubierto por las pruebas</h2>
+<p><b>Incluido:</b> registro, inicio y cierre de sesión, CRUD de tareas, validación de entradas, control de acceso entre usuarios, interfaz web, rendimiento de la API de listado, cabeceras y manejo de errores HTTP. <b>Excluido:</b> despliegue en producción, HTTPS/TLS (se ejecuta en localhost), compatibilidad multi-navegador y pruebas en dispositivos móviles.</p>
+
+<!-- 4. REQUERIMIENTOS -->
+<h1>4. Requerimientos y Criterios de Calidad</h1>
+<h2>4.1 Requisitos funcionales</h2>
+<table>
+<tr><th>ID</th><th>Requisito</th></tr>
+<tr><td>RF01</td><td>El sistema deberá permitir el registro de usuarios con nombre de 3 a 20 caracteres (letras, números y _) y contraseña de 8 a 64 caracteres, sin duplicados.</td></tr>
+<tr><td>RF02</td><td>El sistema deberá permitir la autenticación de usuarios y entregar un token de sesión.</td></tr>
+<tr><td>RF03</td><td>El sistema deberá permitir crear tareas con título de 1 a 100 caracteres y prioridad entera de 1 a 5 (por defecto 3).</td></tr>
+<tr><td>RF04</td><td>El sistema deberá listar las tareas del usuario ordenadas por prioridad descendente.</td></tr>
+<tr><td>RF05</td><td>El sistema deberá permitir marcar una tarea como completada o pendiente.</td></tr>
+<tr><td>RF06</td><td>El sistema deberá permitir eliminar tareas.</td></tr>
+<tr><td>RF07</td><td>El sistema deberá permitir cerrar sesión invalidando el token.</td></tr>
+</table>
+<h2>4.2 Requisitos no funcionales</h2>
+<table>
+<tr><th>ID</th><th>Requisito</th><th>Atributo</th></tr>
+<tr><td>RNF01</td><td>La API deberá responder con latencia p95 &lt; 500 ms y 0 errores con 50 usuarios concurrentes durante 15 s.</td><td>Rendimiento</td></tr>
+<tr><td>RNF02</td><td>Las contraseñas deberán almacenarse con hash y sal, nunca en texto plano.</td><td>Seguridad</td></tr>
+<tr><td>RNF03</td><td>Los endpoints de tareas deberán exigir autenticación y un usuario no podrá acceder a tareas de otro.</td><td>Seguridad</td></tr>
+<tr><td>RNF04</td><td>El sistema no deberá exponer detalles internos (stack traces, tecnología) y deberá enviar cabeceras de seguridad HTTP.</td><td>Seguridad</td></tr>
+<tr><td>RNF05</td><td>El sistema deberá bloquear temporalmente el login tras 5 intentos fallidos consecutivos.</td><td>Seguridad</td></tr>
+<tr><td>RNF06</td><td>Los formularios deberán tener etiquetas accesibles y mostrar mensajes de error claros.</td><td>Usabilidad</td></tr>
+<tr><td>RNF07</td><td>El código deberá mantener calificación A en mantenibilidad y seguridad en SonarQube y duplicación &lt; 3%.</td><td>Mantenibilidad</td></tr>
+</table>
+<h2>4.3 Criterios de aceptación</h2>
+<table>
+<tr><th>Requisito</th><th>Criterio de aceptación (Dado / Cuando / Entonces)</th></tr>
+<tr><td>RF01</td><td>Dado un usuario nuevo válido, cuando se registra, entonces recibe HTTP 201; si el nombre existe recibe 409; si incumple longitudes recibe 400 con mensaje.</td></tr>
+<tr><td>RF02</td><td>Dadas credenciales correctas, cuando inicia sesión, recibe 200 y un token hexadecimal de 64 caracteres; con credenciales incorrectas recibe 401.</td></tr>
+<tr><td>RF03</td><td>Título de 1–100 y prioridad 1–5 → 201; fuera de rango → 400.</td></tr>
+<tr><td>RF04–RF06</td><td>La tarea creada aparece en el listado; al marcarla <code>done=true</code> se refleja; al eliminarla responde 204 y desaparece.</td></tr>
+<tr><td>RNF01</td><td>El script <code>perf/load.js</code> imprime “CUMPLE”.</td></tr>
+<tr><td>RNF03–RNF05</td><td>Pruebas AT10, AT11, AT14, AT15, AT16 aprobadas y ZAP sin alertas de riesgo Medio o Alto.</td></tr>
+</table>
+<h2>4.4 Atributos de calidad analizados (ISO/IEC 25010)</h2>
+<table>
+<tr><th>Atributo</th><th>Cómo se evaluó</th><th>Resultado</th></tr>
+<tr><td>Funcionalidad</td><td>12 casos manuales + 16 automatizados + 1 E2E</td><td>Cumple tras correcciones (100% aprobados en la versión final)</td></tr>
+<tr><td>Usabilidad</td><td>Prueba E2E con capturas, revisión de mensajes, reglas de accesibilidad de SonarQube</td><td>Se detectaron campos sin etiqueta (DEF-05, corregido) y el selector de prioridad no se reinicia (DEF-07, abierto)</td></tr>
+<tr><td>Fiabilidad</td><td>Prueba de carga 15 s sin errores, manejo de JSON malformado, rating de fiabilidad Sonar</td><td>0 errores bajo carga; rating de fiabilidad C → A</td></tr>
+<tr><td>Rendimiento</td><td>autocannon 50 conexiones</td><td>p97.5 = 21 ms, ~3.879 req/s (v2)</td></tr>
+<tr><td>Seguridad</td><td>OWASP Top 10, SonarQube, ZAP baseline, pruebas de inyección y control de acceso</td><td>12 alertas ZAP → 2 informativas; 3 defectos altos/medios corregidos</td></tr>
+<tr><td>Mantenibilidad</td><td>SonarQube (code smells, duplicación, rating)</td><td>0 code smells, 0% duplicación, rating A</td></tr>
+</table>
+
+<!-- 5. PLAN DE PRUEBAS -->
+<h1>5. Plan de Pruebas (basado en IEEE 829 / ISO/IEC/IEEE 29119-3)</h1>
+<table>
+<tr><td class="k">Identificador</td><td>PP-TASKAPP-2026-01</td></tr>
+<tr><td class="k">Elemento de prueba</td><td>TaskApp v1.0 (commit <code>f609bdb</code>) y versión corregida (commit <code>3976c92</code>)</td></tr>
+<tr><td class="k">Criterio de suspensión</td><td>El servidor no inicia o falla más del 50% de casos por causa de ambiente.</td></tr>
+<tr><td class="k">Criterio de salida</td><td>100% de casos ejecutados, 0 defectos críticos/altos abiertos, ZAP sin alertas Medias/Altas, Quality Gate de SonarQube aprobado.</td></tr>
+</table>
+<h2>5.1 Objetivos de prueba</h2>
+<ul>
+<li>Verificar que RF01–RF07 se cumplen según sus criterios de aceptación.</li>
+<li>Validar los límites de las reglas de entrada (longitudes y rangos).</li>
+<li>Medir el tiempo de respuesta de la API bajo carga concurrente (RNF01).</li>
+<li>Identificar vulnerabilidades según OWASP Top 10 con análisis estático y dinámico.</li>
+<li>Registrar, clasificar y hacer seguimiento a los defectos hasta su cierre.</li>
+</ul>
+<h2>5.2 Alcance</h2>
+<p>Ver sección 3.4. Se prueban la API REST, la interfaz web y el código fuente de <code>src/</code> y <code>public/</code>.</p>
+<h2>5.3 Tipos y niveles de prueba</h2>
+<table>
+<tr><th>Nivel</th><th>Qué se prueba</th><th>Casos</th><th>Herramienta</th></tr>
+<tr><td>Unitarias</td><td>Funciones de validación y hash de contraseñas aisladas</td><td>AT01–AT06</td><td>node:test</td></tr>
+<tr><td>Integración</td><td>API HTTP + Express + SQLite en un servidor real (puerto aleatorio)</td><td>AT07–AT16</td><td>node:test + fetch</td></tr>
+<tr><td>Sistema</td><td>Aplicación completa desplegada en localhost: casos manuales, carga, ZAP</td><td>MT01–MT12, RNF01</td><td>curl, autocannon, ZAP</td></tr>
+<tr><td>Aceptación</td><td>Flujo de usuario de punta a punta en el navegador</td><td>AT17 (E2E)</td><td>Playwright + Edge</td></tr>
+</table>
+<h2>5.4 Estrategias</h2>
+<table>
+<tr><th>Estrategia</th><th>Aplicación y justificación</th></tr>
+<tr><td>Funcional (caja negra)</td><td>Casos derivados de los requisitos; validan comportamiento observable de la API y la UI.</td></tr>
+<tr><td>No funcional</td><td>Carga (rendimiento), seguridad (SAST/DAST) y usabilidad/accesibilidad; son los riesgos principales de una app web con autenticación.</td></tr>
+<tr><td>Exploratoria</td><td>Sesiones sin guion sobre login y manejo de errores (MT10–MT12); permitieron encontrar DEF-02 y DEF-03, que no estaban cubiertos por requisitos explícitos.</td></tr>
+<tr><td>Automatizada</td><td>Pruebas de regresión que se re-ejecutan tras cada corrección y en CI; justificada porque las correcciones de seguridad pueden romper funcionalidad existente.</td></tr>
+</table>
+<h2>5.5 Técnicas aplicadas</h2>
+<table>
+<tr><th>Técnica</th><th>Dónde</th><th>Detalle</th></tr>
+<tr><td>Partición de equivalencia</td><td>AT02, AT05, MT01, MT04</td><td>Usuario: clase válida [a-zA-Z0-9_], inválidas (espacios, símbolos, ausente, tipo numérico). Prioridad: válida {1..5}, inválidas (&lt;1, &gt;5, decimal, texto).</td></tr>
+<tr><td>Valores límite</td><td>AT01, AT03, AT04, AT05, AT16, MT02, MT03, MT06–MT08</td><td>Usuario 2/3/20/21; contraseña 7/8/64/65; título 0/1/100/101; prioridad 0/1/5/6; intentos de login 5/6.</td></tr>
+<tr><td>Tabla de decisión</td><td>AT08, AT10, AT16</td><td>Ver tabla abajo (login).</td></tr>
+<tr><td>Pruebas basadas en riesgo / OWASP</td><td>AT11, AT13, AT14, AT15</td><td>Control de acceso roto (A01), inyección SQL (A03), configuración insegura (A05).</td></tr>
+</table>
+<p><b>Tabla de decisión – login</b></p>
+<table>
+<tr><th>Condición</th><th>R1</th><th>R2</th><th>R3</th><th>R4</th></tr>
+<tr><td>Usuario existe</td><td>S</td><td>S</td><td>N</td><td>S</td></tr>
+<tr><td>Contraseña correcta</td><td>S</td><td>N</td><td>-</td><td>S</td></tr>
+<tr><td>Cuenta bloqueada (≥5 fallos)</td><td>N</td><td>N</td><td>N</td><td>S</td></tr>
+<tr><td><b>Acción</b></td><td>200 + token</td><td>401</td><td>401</td><td>429</td></tr>
+<tr><td>Caso</td><td>AT08/MT05</td><td>AT08/MT04</td><td>AT13</td><td>AT16/MT11</td></tr>
+</table>
+<h2>5.6 Recursos</h2>
+<table>
+<tr><th>Tipo</th><th>Detalle</th></tr>
+<tr><td>Humanos</td><td>[Integrante 1]: líder de pruebas y automatización · [Integrante 2]: pruebas manuales y gestión de defectos · [Integrante 3]: seguridad y métricas</td></tr>
+<tr><td>Herramientas</td><td>node:test, Playwright 1.x (playwright-core) con Microsoft Edge, autocannon 8, curl, SonarQube Community (Docker) + sonar-scanner-cli, OWASP ZAP 2.17 (zap-baseline), GitHub, GitHub Actions</td></tr>
+<tr><td>Ambiente</td><td>Windows 11 Pro, Node.js 22.21, Docker Desktop 28.5, servidor local http://localhost:3000, SQLite en archivo</td></tr>
+</table>
+<h2>5.7 Cronograma</h2>
+<table>
+<tr><th>#</th><th>Actividad</th><th>Responsable</th><th>Fecha</th></tr>
+<tr><td>1</td><td>Selección del sistema y levantamiento de requisitos</td><td>Todo el equipo</td><td>09/11/2026</td></tr>
+<tr><td>2</td><td>Plan de pruebas y diseño de casos</td><td>[Integrante 1]</td><td>10/11/2026</td></tr>
+<tr><td>3</td><td>Implementación de pruebas automatizadas</td><td>[Integrante 1]</td><td>11/11/2026 – 12/11/2026</td></tr>
+<tr><td>4</td><td>Ejecución de pruebas manuales y exploratorias</td><td>[Integrante 2]</td><td>14/11/2026</td></tr>
+<tr><td>5</td><td>Prueba de carga</td><td>[Integrante 3]</td><td>14/11/2026</td></tr>
+<tr><td>6</td><td>Análisis SonarQube y OWASP ZAP (v1)</td><td>[Integrante 3]</td><td>14/11/2026</td></tr>
+<tr><td>7</td><td>Registro y corrección de defectos</td><td>[Integrante 2]</td><td>14/11/2026</td></tr>
+<tr><td>8</td><td>Re-ejecución (regresión) y verificación de correcciones</td><td>Todo el equipo</td><td>14/11/2026</td></tr>
+<tr><td>9</td><td>Métricas, informe y entrega</td><td>Todo el equipo</td><td>15/11/2026 – 22/11/2026</td></tr>
+</table>
+
+<!-- 6. CASOS DE PRUEBA -->
+<h1>6. Diseño de Casos de Prueba</h1>
+<p>Precondición común de los casos manuales: servidor iniciado con <code>npm start</code> en http://localhost:3000 sobre una base de datos vacía. Los casos manuales se ejecutaron con <code>curl</code> (guion <code>tests/manual-run.sh</code> para reproducibilidad) y se registró la respuesta completa en <code>evidencias/02-casos-manuales-v1.log</code> y <code>evidencias/08-casos-manuales-v2.log</code>. El “Resultado obtenido” corresponde a la primera ejecución (v1).</p>
+<h2>6.1 Casos manuales</h2>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT01</b> – Registro con valores mínimos válidos</td></tr>
+<tr><td class="k">Objetivo</td><td>Verificar el registro en el límite inferior válido (valores límite)</td></tr>
+<tr><td class="k">Requisito</td><td>RF01</td></tr>
+<tr><td class="k">Precondiciones</td><td>El usuario <code>qa1</code> no existe</td></tr>
+<tr><td class="k">Datos de entrada</td><td>username=<code>qa1</code> (3 car.), password=<code>Clave123</code> (8 car.)</td></tr>
+<tr><td class="k">Pasos</td><td>1. Enviar POST /api/register con los datos. 2. Revisar código y cuerpo.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>201 Created con <code>{"id":1,"username":"qa1"}</code></td></tr>
+<tr><td class="k">Resultado obtenido</td><td>201 Created <code>{"id":1,"username":"qa1"}</code></td></tr>
+<tr><td class="k">Estado</td><td class="ok">Aprobado</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT02</b> – Registro con usuario de 2 caracteres</td></tr>
+<tr><td class="k">Objetivo</td><td>Verificar rechazo en el límite inválido inferior</td></tr>
+<tr><td class="k">Requisito</td><td>RF01</td></tr>
+<tr><td class="k">Precondiciones</td><td>Ninguna</td></tr>
+<tr><td class="k">Datos de entrada</td><td>username=<code>qa</code>, password=<code>Clave123</code></td></tr>
+<tr><td class="k">Pasos</td><td>1. POST /api/register. 2. Revisar respuesta.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>400 con mensaje de longitud</td></tr>
+<tr><td class="k">Resultado obtenido</td><td>400 <code>"El usuario debe tener entre 3 y 20 caracteres"</code></td></tr>
+<tr><td class="k">Estado</td><td class="ok">Aprobado</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT03</b> – Registro con contraseña de 7 caracteres</td></tr>
+<tr><td class="k">Objetivo</td><td>Verificar rechazo de contraseña bajo el límite</td></tr>
+<tr><td class="k">Requisito</td><td>RF01, RNF02</td></tr>
+<tr><td class="k">Precondiciones</td><td>Ninguna</td></tr>
+<tr><td class="k">Datos de entrada</td><td>username=<code>qa2</code>, password=<code>Clave12</code></td></tr>
+<tr><td class="k">Pasos</td><td>1. POST /api/register. 2. Revisar respuesta.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>400 con mensaje de longitud de contraseña</td></tr>
+<tr><td class="k">Resultado obtenido</td><td>400 <code>"La contrasena debe tener entre 8 y 64 caracteres"</code></td></tr>
+<tr><td class="k">Estado</td><td class="ok">Aprobado</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT04</b> – Login con contraseña incorrecta</td></tr>
+<tr><td class="k">Objetivo</td><td>Clase inválida de credenciales</td></tr>
+<tr><td class="k">Requisito</td><td>RF02</td></tr>
+<tr><td class="k">Precondiciones</td><td>Usuario <code>qa1</code> registrado (MT01)</td></tr>
+<tr><td class="k">Datos de entrada</td><td>qa1 / <code>Incorrecta1</code></td></tr>
+<tr><td class="k">Pasos</td><td>1. POST /api/login. 2. Revisar respuesta.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>401, mensaje genérico (no revela si el usuario existe)</td></tr>
+<tr><td class="k">Resultado obtenido</td><td>401 <code>"Credenciales invalidas"</code></td></tr>
+<tr><td class="k">Estado</td><td class="ok">Aprobado</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT05</b> – Login correcto</td></tr>
+<tr><td class="k">Objetivo</td><td>Clase válida de credenciales</td></tr>
+<tr><td class="k">Requisito</td><td>RF02</td></tr>
+<tr><td class="k">Precondiciones</td><td>Usuario <code>qa1</code> registrado</td></tr>
+<tr><td class="k">Datos de entrada</td><td>qa1 / <code>Clave123</code></td></tr>
+<tr><td class="k">Pasos</td><td>1. POST /api/login. 2. Guardar token.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>200 con token hexadecimal de 64 caracteres</td></tr>
+<tr><td class="k">Resultado obtenido</td><td>200 <code>{"token":"c6b7ba99…ae72a5"}</code> (64 car.)</td></tr>
+<tr><td class="k">Estado</td><td class="ok">Aprobado</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT06</b> – Crear tarea con título de 100 caracteres y prioridad 5</td></tr>
+<tr><td class="k">Objetivo</td><td>Límite superior válido de título y prioridad</td></tr>
+<tr><td class="k">Requisito</td><td>RF03</td></tr>
+<tr><td class="k">Precondiciones</td><td>Sesión iniciada (token de MT05)</td></tr>
+<tr><td class="k">Datos de entrada</td><td>title = "T" × 100, priority = 5</td></tr>
+<tr><td class="k">Pasos</td><td>1. POST /api/tasks con Authorization Bearer. 2. Revisar respuesta.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>201 con la tarea creada</td></tr>
+<tr><td class="k">Resultado obtenido</td><td>201 <code>{"id":1,"title":"TTTT…","priority":5,"done":false}</code></td></tr>
+<tr><td class="k">Estado</td><td class="ok">Aprobado</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT07</b> – Crear tarea con título de 101 caracteres</td></tr>
+<tr><td class="k">Objetivo</td><td>Límite superior inválido</td></tr>
+<tr><td class="k">Requisito</td><td>RF03</td></tr>
+<tr><td class="k">Precondiciones</td><td>Sesión iniciada</td></tr>
+<tr><td class="k">Datos de entrada</td><td>title = "T" × 101, priority = 3</td></tr>
+<tr><td class="k">Pasos</td><td>1. POST /api/tasks. 2. Revisar respuesta.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>400 con mensaje de longitud</td></tr>
+<tr><td class="k">Resultado obtenido</td><td>400 <code>"El titulo no puede superar 100 caracteres"</code></td></tr>
+<tr><td class="k">Estado</td><td class="ok">Aprobado</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT08</b> – Crear tarea con prioridad 0</td></tr>
+<tr><td class="k">Objetivo</td><td>Límite inferior inválido de prioridad</td></tr>
+<tr><td class="k">Requisito</td><td>RF03</td></tr>
+<tr><td class="k">Precondiciones</td><td>Sesión iniciada</td></tr>
+<tr><td class="k">Datos de entrada</td><td>title="Prioridad cero", priority=0</td></tr>
+<tr><td class="k">Pasos</td><td>1. POST /api/tasks. 2. Revisar respuesta.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>400</td></tr>
+<tr><td class="k">Resultado obtenido</td><td>400 <code>"La prioridad debe ser un entero entre 1 y 5"</code></td></tr>
+<tr><td class="k">Estado</td><td class="ok">Aprobado</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT09</b> – Completar tarea y listar</td></tr>
+<tr><td class="k">Objetivo</td><td>Verificar actualización de estado y listado</td></tr>
+<tr><td class="k">Requisito</td><td>RF04, RF05</td></tr>
+<tr><td class="k">Precondiciones</td><td>Tarea id=1 creada (MT06)</td></tr>
+<tr><td class="k">Datos de entrada</td><td>PATCH /api/tasks/1 <code>{"done":true}</code></td></tr>
+<tr><td class="k">Pasos</td><td>1. PATCH. 2. GET /api/tasks.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>200 y la tarea aparece con <code>done:true</code></td></tr>
+<tr><td class="k">Resultado obtenido</td><td>200 <code>{"id":1,"done":true}</code>; listado muestra <code>"done":true</code></td></tr>
+<tr><td class="k">Estado</td><td class="ok">Aprobado</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT10</b> – Envío de JSON malformado</td></tr>
+<tr><td class="k">Objetivo</td><td>Verificar manejo seguro de errores (exploratoria)</td></tr>
+<tr><td class="k">Requisito</td><td>RNF04</td></tr>
+<tr><td class="k">Precondiciones</td><td>Sesión iniciada</td></tr>
+<tr><td class="k">Datos de entrada</td><td><code>{"title": "sin cerrar</code></td></tr>
+<tr><td class="k">Pasos</td><td>1. POST /api/tasks con cuerpo malformado. 2. Revisar respuesta.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>400 con mensaje genérico en JSON, sin detalles internos</td></tr>
+<tr><td class="k">Resultado obtenido</td><td>400 en HTML con <b>stack trace completo y rutas del servidor</b> (<code>C:\Users\...\node_modules\body-parser\...</code>) → DEF-02</td></tr>
+<tr><td class="k">Estado</td><td class="fail">Fallido</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT11</b> – Intentos repetidos de login fallido</td></tr>
+<tr><td class="k">Objetivo</td><td>Verificar protección contra fuerza bruta (exploratoria, OWASP A07)</td></tr>
+<tr><td class="k">Requisito</td><td>RNF05</td></tr>
+<tr><td class="k">Precondiciones</td><td>Usuario qa1 existe</td></tr>
+<tr><td class="k">Datos de entrada</td><td>15 contraseñas incorrectas y luego la correcta</td></tr>
+<tr><td class="k">Pasos</td><td>1. Enviar 15 POST /api/login erróneos. 2. Enviar el correcto.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>Bloqueo (429) a partir del 6.º intento</td></tr>
+<tr><td class="k">Resultado obtenido</td><td>15 × 401 y el intento 16 con la clave correcta → 200: <b>no hay bloqueo</b> → DEF-03</td></tr>
+<tr><td class="k">Estado</td><td class="fail">Fallido</td></tr>
+</table></div>
+
+<div class="tc"><table>
+<tr><td class="k">ID / Nombre</td><td><b>MT12</b> – Cierre de sesión invalida el token</td></tr>
+<tr><td class="k">Objetivo</td><td>Verificar que el token deja de servir</td></tr>
+<tr><td class="k">Requisito</td><td>RF07</td></tr>
+<tr><td class="k">Precondiciones</td><td>Sesión iniciada</td></tr>
+<tr><td class="k">Datos de entrada</td><td>Token de MT05</td></tr>
+<tr><td class="k">Pasos</td><td>1. POST /api/logout. 2. GET /api/tasks con el mismo token.</td></tr>
+<tr><td class="k">Resultado esperado</td><td>204 y luego 401</td></tr>
+<tr><td class="k">Resultado obtenido</td><td>204 y luego 401 <code>"No autenticado"</code></td></tr>
+<tr><td class="k">Estado</td><td class="ok">Aprobado</td></tr>
+</table></div>
+
+<h2>6.2 Casos automatizados</h2>
+<p>Todos tienen como precondición una base de datos en memoria nueva (se crea al iniciar la suite). El resultado obtenido corresponde a la ejecución final (<code>evidencias/14-pruebas-automatizadas-final.log</code>); en la v1 AT14 falló (DEF-01).</p>
+<table>
+<tr><th>ID</th><th>Nombre / Objetivo</th><th>Req.</th><th>Datos de entrada (técnica)</th><th>Resultado esperado</th><th>Obtenido</th><th>Estado</th></tr>
+<tr><td>AT01</td><td>Longitud de usuario</td><td>RF01</td><td>2, 3, 20, 21 car. (VL)</td><td>inválido, válido, válido, inválido</td><td>Igual</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT02</td><td>Clases de usuario</td><td>RF01</td><td>juan_01, "juan perez", "juan&lt;script&gt;", undefined, 12345 (PE)</td><td>solo la 1.ª válida</td><td>Igual</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT03</td><td>Longitud de contraseña</td><td>RF01</td><td>7, 8, 64, 65 (VL)</td><td>inv, val, val, inv</td><td>Igual</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT04</td><td>Título de tarea</td><td>RF03</td><td>"", "   ", 1, 100, 101 car. (VL+PE)</td><td>inv, inv, val, val, inv</td><td>Igual</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT05</td><td>Prioridad</td><td>RF03</td><td>0,1,5,6, 2.5, "3" (VL+PE)</td><td>solo 1 y 5 válidos</td><td>Igual</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT06</td><td>Hash con sal</td><td>RNF02</td><td>misma clave dos veces</td><td>hashes distintos, sin texto plano, verificación correcta</td><td>Igual</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT07</td><td>Registro y duplicado</td><td>RF01</td><td>ana / Clave1234 ×2</td><td>201 y 409</td><td>201 y 409</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT08</td><td>Login correcto/incorrecto</td><td>RF02</td><td>clave buena / mala</td><td>200 + token, 401</td><td>Igual</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT09</td><td>CRUD de tareas</td><td>RF03–RF06</td><td>"Estudiar QA", p=5</td><td>201, lista 1, done=true, 204, lista 0</td><td>Igual</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT10</td><td>Endpoints protegidos</td><td>RNF03</td><td>sin token / token falso</td><td>401</td><td>401</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT11</td><td>Acceso a tareas ajenas (IDOR)</td><td>RNF03</td><td>usuario B borra/edita tarea de A</td><td>404</td><td>404</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT12</td><td>Validación en API</td><td>RF03</td><td>p=6, título vacío</td><td>400</td><td>400</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT13</td><td>Inyección SQL en login</td><td>RNF03</td><td><code>' OR '1'='1</code></td><td>401</td><td>401</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT14</td><td>Cabeceras de seguridad</td><td>RNF04</td><td>GET /api/health y /no-existe</td><td>sin X-Powered-By; nosniff; CSP; CORP</td><td>v1: X-Powered-By=Express; final: correcto</td><td class="ok">Aprobado (v1 Fallido)</td></tr>
+<tr><td>AT15</td><td>JSON malformado</td><td>RNF04</td><td><code>{"username": "x</code></td><td>400 sin stack trace</td><td>Igual</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT16</td><td>Bloqueo de login</td><td>RNF05</td><td>5 fallos y 6.º intento (VL)</td><td>401 ×5, luego 429</td><td>Igual</td><td class="ok">Aprobado</td></tr>
+<tr><td>AT17</td><td>E2E interfaz: registro, login, 3 tareas, completar, XSS en título</td><td>RF01–RF05, RNF06</td><td>Playwright sobre Edge</td><td>4 tareas visibles, mensaje de error de clave corta, payload XSS mostrado como texto</td><td>“Tareas en pantalla: 4 OK”</td><td class="ok">Aprobado</td></tr>
+</table>
+<p>VL = valores límite, PE = partición de equivalencia.</p>
+
+<!-- 7. EJECUCIÓN -->
+<h1>7. Ejecución y Evidencias de Pruebas</h1>
+<h2>7.1 Pruebas funcionales</h2>
+<p><b>Automatizadas – primera ejecución (v1).</b> 13 de 14 aprobadas; AT14 falló porque Express envía <code>X-Powered-By: Express</code>:</p>
+<pre>✔ AT07 registro exitoso y usuario duplicado (RF01) (68.2181ms)
+✔ AT08 login correcto devuelve token y login incorrecto 401 (RF02) (99.3373ms)
+...
+✖ AT14 cabeceras de seguridad presentes y sin X-Powered-By (2.152ms)
+ℹ tests 14   ℹ pass 13   ℹ fail 1
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  'Express' !== null</pre>
+<p><b>Automatizadas – ejecución final.</b> 16 de 16 aprobadas en 0,88 s, con cobertura:</p>
+<pre>✔ AT07 … ✔ AT16  ✔ AT01 … ✔ AT06
+ℹ tests 16   ℹ pass 16   ℹ fail 0   ℹ duration_ms 880.1305
+ℹ  app.js             |  97.04 |    80.39 |   93.75 | 72-73 91-92
+ℹ  validators.js      | 100.00 |    95.65 |  100.00 |</pre>
+<p><b>Manuales – evidencia del fallo MT10 (v1)</b>, extracto de <code>evidencias/02-casos-manuales-v1.log</code>:</p>
+<pre>$ curl -X POST /api/tasks -d '{"title": "sin cerrar'
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: text/html; charset=utf-8
+&lt;pre&gt;SyntaxError: Unterminated string in JSON at position 21 (line 1 column 22)&lt;br&gt;
+   at JSON.parse (&lt;anonymous&gt;)&lt;br&gt;
+   at parse (C:\Users\…\final\node_modules\body-parser\lib\types\json.js:96:19) …</pre>
+<p><b>Evidencia del fallo MT11 (v1)</b> y su verificación en v2:</p>
+<pre>v1: 401 401 401 401 401 401 401 401 401 401 401 401 401 401 401
+    intento 16 con clave correcta: 200      ← sin protección
+v2: 401 401 401 401 401 429 429 429 429 429 429 429 429 429 429
+    intento 16 con clave correcta: 429      ← bloqueado
+v2 MT10: HTTP/1.1 400 Bad Request  Content-Type: application/json  {"error":"Solicitud invalida"}</pre>
+<p><b>E2E en interfaz (AT17)</b>:</p>
+<figure><img src="../evidencias/ui-01-login.png" style="width:48%"> <img src="../evidencias/ui-02-registro-clave-corta.png" style="width:48%"><figcaption>Figura 1. Pantalla de ingreso y mensaje de validación al registrar con contraseña corta</figcaption></figure>
+<figure><img src="../evidencias/ui-03-tareas.png" style="width:60%"><figcaption>Figura 2. Listado tras crear tareas, completar la de prioridad 5 e ingresar un payload XSS (se muestra como texto, no se ejecuta). Se observa además que el selector de prioridad queda en “1 - Muy baja” tras agregar (DEF-07).</figcaption></figure>
+
+<h2>7.2 Pruebas de rendimiento</h2>
+<p>Prueba de carga con autocannon (<code>perf/load.js</code>): 50 conexiones concurrentes durante 15 s contra <code>GET /api/tasks</code> autenticado (usuario con 20 tareas).</p>
+<table>
+<tr><th>Versión</th><th>Peticiones</th><th>Req/s prom.</th><th>Latencia prom.</th><th>p97.5</th><th>Máx.</th><th>Errores</th><th>RNF01</th></tr>
+<tr><td>v1</td><td>30.696</td><td>2.046,6</td><td>23,93 ms</td><td>37 ms</td><td>56 ms</td><td>0</td><td class="ok">CUMPLE</td></tr>
+<tr><td>v2 (final)</td><td>58.177</td><td>3.879,1</td><td>12,39 ms</td><td>21 ms</td><td>35 ms</td><td>0</td><td class="ok">CUMPLE</td></tr>
+</table>
+<pre>┌─────────┬───────┬───────┬───────┬───────┬──────────┬─────────┬───────┐
+│ Stat    │ 2.5%  │ 50%   │ 97.5% │ 99%   │ Avg      │ Stdev   │ Max   │
+│ Latency │ 16 ms │ 23 ms │ 37 ms │ 40 ms │ 23.93 ms │ 5.54 ms │ 56 ms │   (v1)
+31k requests in 15.03s, 62.2 MB read
+RNF01 (p95 &lt; 500 ms y 0 errores): CUMPLE</pre>
+<p><b>Análisis.</b> La latencia p97.5 (cota superior del p95) está más de 10 veces por debajo del umbral de 500 ms y no hubo errores, por lo que el sistema es <b>estable</b> bajo esta carga. La diferencia v1→v2 no se debe a las correcciones (que agregan trabajo, no lo quitan) sino a que en v1 el equipo estaba descargando imágenes Docker en paralelo; esto muestra que los resultados de rendimiento dependen del ambiente y deben medirse en condiciones controladas. Limitación: SQLite sobre un único proceso no escala horizontalmente; con escrituras concurrentes intensas se esperaría degradación.</p>
+
+<h2>7.3 Pruebas no funcionales (estabilidad y usabilidad)</h2>
+<ul>
+<li><b>Estabilidad:</b> 88.873 peticiones en total durante las dos pruebas de carga, 0 errores y 0 respuestas no-2xx; el proceso no se cayó durante ninguna prueba ni durante el escaneo de ZAP.</li>
+<li><b>Usabilidad:</b> mensajes de error en lenguaje claro (Figura 1); SonarQube detectó dos campos sin etiqueta accesible (WCAG 2 A) → DEF-05; la prueba E2E evidenció que el selector de prioridad no vuelve al valor por defecto → DEF-07.</li>
+</ul>
+
+<!-- 8. AUTOMATIZACIÓN -->
+<h1>8. Automatización de Pruebas</h1>
+<table>
+<tr><th>Script</th><th>Herramienta / Lenguaje</th><th>Descripción y escenarios</th></tr>
+<tr><td><code>tests/validators.test.js</code></td><td>node:test / JavaScript</td><td>6 pruebas unitarias (AT01–AT06) de reglas de validación y hash: valores límite y partición de equivalencia.</td></tr>
+<tr><td><code>tests/api.test.js</code></td><td>node:test + fetch / JavaScript</td><td>10 pruebas de integración (AT07–AT16): levanta la app en un puerto aleatorio con BD en memoria y prueba registro, login, CRUD, control de acceso, inyección SQL, cabeceras, errores y bloqueo.</td></tr>
+<tr><td><code>tests/ui-evidencias.js</code></td><td>Playwright (Edge) / JavaScript</td><td>Prueba E2E (AT17) del flujo completo en el navegador y captura de pantallas.</td></tr>
+<tr><td><code>perf/load.js</code></td><td>autocannon / JavaScript</td><td>Prueba de carga que evalúa automáticamente RNF01 y retorna código de salida ≠ 0 si no cumple.</td></tr>
+<tr><td><code>tests/manual-run.sh</code></td><td>Bash + curl</td><td>Guion que reproduce los casos manuales MT01–MT12 y deja log.</td></tr>
+<tr><td><code>tests/sonar-capturas.js</code>, <code>tests/zap-capturas.js</code></td><td>Playwright</td><td>Capturas de los dashboards de SonarQube y reportes ZAP.</td></tr>
+</table>
+<p><b>Comandos:</b> <code>npm test</code> · <code>npm run test:coverage</code> (genera <code>coverage/lcov.info</code> para SonarQube) · <code>npm run perf</code>.</p>
+<p><b>Resultados:</b> 17 casos automatizados, 17 aprobados en la versión final (1 fallido en v1 que reveló DEF-01). La suite unitaria+integración tarda menos de 1 s, por lo que se puede ejecutar en cada commit.</p>
+<h2>8.1 Integración CI/CD</h2>
+<p>El repositorio incluye el pipeline <code>.github/workflows/ci.yml</code> (GitHub Actions) que se ejecuta en cada <i>push</i> y <i>pull request</i>:</p>
+<pre>jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4   (node 22, cache npm)
+      - run: npm ci
+      - name: Pruebas unitarias e integracion con cobertura
+        run: npm run test:coverage            ← falla el build si una prueba falla
+      - name: Levantar servidor
+        run: npm start &amp; npx wait-on http://localhost:3000/api/health
+      - name: Prueba de carga (RNF01)
+        run: npm run perf                      ← falla si p95 ≥ 500 ms
+      - name: OWASP ZAP baseline (DAST)
+        uses: zaproxy/action-baseline@v0.14.0
+      - uses: actions/upload-artifact@v4       (reporte de cobertura)</pre>
+<p>Flujo: <b>commit → pruebas unitarias/integración → despliegue efímero → carga → DAST → artefactos</b>. Como mejora, se puede agregar el paso <code>SonarSource/sonarqube-scan-action</code> apuntando a un servidor SonarQube accesible desde internet (o SonarQube Cloud) y bloquear el merge si el Quality Gate falla. Los resultados de cada ejecución quedan visibles en la pestaña <i>Actions</i> del repositorio.</p>
+
+<!-- 9. DEFECTOS -->
+<h1>9. Gestión de Defectos</h1>
+<p><b>Herramienta:</b> registro de defectos versionado en el repositorio GitHub (<code>docs/defectos.md</code>), con trazabilidad a los commits que los introducen/corrigen (los mensajes de commit referencian el ID DEF-xx). Estados usados: Nuevo → Asignado → En corrección → Corregido → Verificado → Cerrado (o Diferido).</p>
+<table>
+<tr><th>ID</th><th>Descripción</th><th>Severidad</th><th>Prioridad</th><th>Estado</th><th>Evidencia</th></tr>
+<tr><td>DEF-01</td><td>El servidor expone <code>X-Powered-By: Express</code> y no envía cabeceras de seguridad (CSP, X-Frame-Options, nosniff, Permissions-Policy, COOP/COEP)</td><td>Medio</td><td>Alta</td><td>Cerrado</td><td>AT14 (v1), ZAP 10037/10038/10020/10021/10063/90004</td></tr>
+<tr><td>DEF-02</td><td>Con JSON malformado la API devuelve el stack trace con rutas internas del servidor (fuga de información)</td><td>Alto</td><td>Alta</td><td>Cerrado</td><td>MT10, <code>02-casos-manuales-v1.log</code></td></tr>
+<tr><td>DEF-03</td><td>No existe protección contra fuerza bruta en el login: intentos ilimitados</td><td>Alto</td><td>Alta</td><td>Cerrado</td><td>MT11</td></tr>
+<tr><td>DEF-04</td><td>Los tokens de sesión no expiran y se guardan en memoria (se pierden al reiniciar; un token robado sirve indefinidamente)</td><td>Medio</td><td>Media</td><td>Diferido (abierto)</td><td>Revisión de código <code>src/app.js</code> (Map <code>sessions</code>)</td></tr>
+<tr><td>DEF-05</td><td>Los campos “título” y “prioridad” no tienen etiqueta asociada (accesibilidad WCAG 2 A)</td><td>Bajo</td><td>Media</td><td>Cerrado</td><td>SonarQube v1 (2 bugs), Figura 6</td></tr>
+<tr><td>DEF-06</td><td>Las respuestas 404 usan el manejador por defecto de Express que reemplaza la CSP; falta <code>Cross-Origin-Resource-Policy</code></td><td>Bajo</td><td>Media</td><td>Cerrado</td><td>ZAP v2 (10055 en /robots.txt, 90004)</td></tr>
+<tr><td>DEF-07</td><td>Tras agregar una tarea, el selector de prioridad no vuelve a “3 - Media”, lo que puede inducir a crear tareas con prioridad errónea</td><td>Bajo</td><td>Baja</td><td>Abierto</td><td>Figura 2 (AT17)</td></tr>
+<tr><td>DEF-08</td><td>La dependencia de desarrollo autocannon 8 incluye <code>uuid</code> &lt;11.1.1 con vulnerabilidad moderada GHSA-w5hq-g745-h8pq (3 avisos en <code>npm audit</code>)</td><td>Bajo</td><td>Media</td><td>Cerrado</td><td><code>evidencias/17-npm-audit.log</code> → <code>18-npm-audit-final.log</code></td></tr>
+</table>
+<p>No se encontraron defectos de severidad <b>Crítica</b> (por ejemplo, inyección SQL o acceso a datos de otros usuarios), lo cual fue verificado explícitamente con AT11 y AT13.</p>
+<h2>9.1 Ciclo de vida de un defecto representativo: DEF-01</h2>
+<table>
+<tr><th>Estado</th><th>Fecha</th><th>Detalle</th></tr>
+<tr><td>Nuevo</td><td>14/11/2026</td><td>La prueba automatizada AT14 falla en el commit <code>f609bdb</code>: <code>'Express' !== null</code>. ZAP v1 lo confirma con 6 tipos de alerta.</td></tr>
+<tr><td>Asignado</td><td>14/11/2026</td><td>Asignado a [Integrante 2], severidad Medio (facilita reconocimiento y ataques de clickjacking/MIME sniffing), prioridad Alta (corrección simple, bajo riesgo).</td></tr>
+<tr><td>En corrección / Corregido</td><td>14/11/2026</td><td>Se deshabilita <code>x-powered-by</code> y se agrega un middleware con CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, COEP, COOP y Cache-Control.</td></tr>
+<tr><td>Verificado (parcial) → nuevo hallazgo</td><td>14/11/2026</td><td>AT14 pasa y ZAP v2 baja de 12 a 4 alertas, pero detecta que las respuestas 404 pierden la CSP → se registra DEF-06 vinculado.</td></tr>
+<tr><td>Cerrado</td><td>14/11/2026</td><td>Tras corregir DEF-06, ZAP final reporta 0 alertas Medias/Bajas y AT14 (ampliada para 404) pasa. Commit <code>3976c92</code>.</td></tr>
+</table>
+
+<!-- 10. SEGURIDAD -->
+<h1>10. Pruebas de Seguridad (OWASP Top 10)</h1>
+<h2>10.1 Análisis estático – SonarQube</h2>
+<p>SonarQube Community Build (Docker) + sonar-scanner-cli. Primera ejecución (v1): 0 vulnerabilidades, 0 security hotspots, <b>2 bugs</b> de fiabilidad/accesibilidad (DEF-05), Quality Gate aprobado. El análisis estático no detectó DEF-02 ni DEF-03 porque son problemas de configuración y de lógica ausente, no patrones de código inseguro: esto confirma que <b>SAST por sí solo no es suficiente</b>.</p>
+<figure><img src="../evidencias/sonar-issues-v1.png" style="width:85%"><figcaption>Figura 3. Issues de SonarQube en v1</figcaption></figure>
+<h2>10.2 Análisis dinámico – OWASP ZAP</h2>
+<p>ZAP 2.17 <i>baseline scan</i> (spider + escaneo pasivo) contra la aplicación en ejecución, desde Docker: <code>zap-baseline.py -t http://host.docker.internal:3000</code>.</p>
+<table>
+<tr><th>Riesgo</th><th>v1</th><th>v2</th><th>Final</th></tr>
+<tr><td>Alto</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>Medio</td><td>3</td><td>1</td><td>0</td></tr>
+<tr><td>Bajo</td><td>6</td><td>1</td><td>0</td></tr>
+<tr><td>Informativo</td><td>3</td><td>2</td><td>2</td></tr>
+</table>
+<figure><img src="../evidencias/zap-v1.png" style="width:48%"> <img src="../evidencias/zap-final.png" style="width:48%"><figcaption>Figura 4. Reporte ZAP v1 (izq.) y final (der.)</figcaption></figure>
+<h2>10.3 Evaluación por categoría OWASP Top 10 (2021)</h2>
+<table>
+<tr><th>Categoría</th><th>Prueba / evidencia</th><th>Hallazgo y riesgo</th><th>Impacto potencial</th><th>Mitigación</th></tr>
+<tr><td>A01 Control de acceso roto</td><td>AT10, AT11 (IDOR), MT12</td><td>Sin hallazgos: consultas filtran por <code>user_id</code>; tarea ajena → 404</td><td>—</td><td>Mantener filtro por dueño en todas las consultas.</td></tr>
+<tr><td>A02 Fallas criptográficas</td><td>AT06, revisión</td><td>Hash scrypt + sal ✔. Tráfico en HTTP (localhost)</td><td>En producción sin TLS se robarían tokens</td><td>Desplegar con HTTPS y HSTS.</td></tr>
+<tr><td>A03 Inyección</td><td>AT13, AT17 (XSS), Sonar</td><td>Sin hallazgos: consultas parametrizadas, UI usa <code>textContent</code></td><td>—</td><td>Mantener sentencias preparadas; CSP como defensa en profundidad.</td></tr>
+<tr><td>A04 Diseño inseguro</td><td>MT11</td><td><b>DEF-03</b>: sin límite de intentos</td><td>Adivinación de contraseñas por fuerza bruta</td><td>Bloqueo tras 5 fallos por 15 min (implementado). Mejora: límite por IP.</td></tr>
+<tr><td>A05 Configuración insegura</td><td>MT10, AT14, ZAP</td><td><b>DEF-01, DEF-02, DEF-06</b>: stack traces, X-Powered-By, cabeceras faltantes</td><td>Reconocimiento de tecnología/rutas, clickjacking, MIME sniffing</td><td>Manejador de errores genérico, cabeceras de seguridad, 404 propio (implementado).</td></tr>
+<tr><td>A06 Componentes vulnerables</td><td><code>npm audit</code></td><td><b>DEF-08</b>: 3 avisos moderados en dependencia de desarrollo (uuid vía autocannon 8); producción con 0</td><td>Bajo: solo afecta herramientas de prueba, no el servidor desplegado</td><td>Actualizar a autocannon 9 (implementado, <code>npm audit</code> = 0). Ejecutar <code>npm audit</code> en CI / Dependabot.</td></tr>
+<tr><td>A07 Fallas de autenticación</td><td>MT11, revisión</td><td><b>DEF-03</b> (corregido), <b>DEF-04</b>: tokens sin expiración (abierto)</td><td>Un token filtrado da acceso permanente</td><td>Expiración de tokens (p. ej. 2 h) y almacenamiento persistente de sesiones.</td></tr>
+<tr><td>A08 Integridad de software/datos</td><td>Revisión</td><td><code>package-lock.json</code> versionado, <code>npm ci</code> en CI</td><td>—</td><td>Fijar versiones de acciones de CI por hash.</td></tr>
+<tr><td>A09 Registro y monitoreo</td><td>Revisión</td><td>No se registran intentos fallidos ni bloqueos</td><td>Ataques no detectados</td><td>Agregar logs de seguridad (login fallido, 429).</td></tr>
+<tr><td>A10 SSRF</td><td>Revisión</td><td>No aplica: el servidor no hace peticiones salientes</td><td>—</td><td>—</td></tr>
+</table>
+
+<!-- 11. MÉTRICAS -->
+<h1>11. Métricas de Calidad</h1>
+<h2>11.1 KPIs</h2>
+<table>
+<tr><th>KPI</th><th>Fórmula</th><th>Valor</th><th>Interpretación</th></tr>
+<tr><td>Casos aprobados/fallidos (1.ª ejecución)</td><td>aprobados / ejecutados</td><td>Manuales 10/12 (83%); automatizados 14/15 (93%, incluye E2E)</td><td>Los fallos fueron detectados en pruebas exploratorias y de seguridad, no en las funcionales básicas.</td></tr>
+<tr><td>Casos aprobados (final)</td><td>aprobados / ejecutados</td><td>29/29 (100%)</td><td>Cumple criterio de salida.</td></tr>
+<tr><td>Cobertura de pruebas (backend)</td><td>líneas ejecutadas / líneas</td><td>app.js 97,0%, validators.js 100% (ramas 80,4% / 95,7%)</td><td>Alta; las líneas sin cubrir son el manejador de error 500 y el 404 de PATCH.</td></tr>
+<tr><td>Cobertura SonarQube (global)</td><td>—</td><td>77,7%</td><td>Menor porque <code>public/app.js</code> se prueba con E2E pero no se instrumenta.</td></tr>
+<tr><td>Cobertura de requisitos</td><td>requisitos con ≥1 caso / total</td><td>14/14 (100%)</td><td>Todos los RF y RNF tienen al menos un caso.</td></tr>
+<tr><td>Total de defectos</td><td>—</td><td>8 (0 críticos, 2 altos, 2 medios, 4 bajos)</td><td>—</td></tr>
+<tr><td>Tasa de defectos</td><td>defectos / casos ejecutados</td><td>8 / 29 = 0,28</td><td>1 defecto por cada ~3,6 casos: alta efectividad de las pruebas exploratorias y de seguridad.</td></tr>
+<tr><td>Densidad de defectos</td><td>defectos / KLOC (238 LOC v1)</td><td>33,6 def/KLOC</td><td>Alta en valor relativo, por ser un sistema pequeño; 5 de 8 son de configuración de seguridad.</td></tr>
+<tr><td>Tasa de resolución</td><td>cerrados / total</td><td>6/8 (75%)</td><td>Los abiertos son Medio y Bajo, aceptables según criterio de salida.</td></tr>
+<tr><td>Tiempo de ejecución</td><td>—</td><td>Unit+integración 0,88 s; E2E ≈ 5 s; carga 15 s; ZAP ≈ 1 min; Sonar ≈ 30 s</td><td>Toda la batería cabe en un pipeline de CI de pocos minutos.</td></tr>
+</table>
+<h2>11.2 SonarQube</h2>
+<table>
+<tr><th>Métrica</th><th>v1</th><th>Final</th></tr>
+<tr><td>Bugs</td><td>2</td><td>0</td></tr>
+<tr><td>Vulnerabilidades</td><td>0</td><td>0</td></tr>
+<tr><td>Security Hotspots</td><td>0</td><td>0</td></tr>
+<tr><td>Code Smells</td><td>0</td><td>0</td></tr>
+<tr><td>Duplicación</td><td>0,0%</td><td>0,0%</td></tr>
+<tr><td>Coverage</td><td>74,3%</td><td>77,7%</td></tr>
+<tr><td>Reliability Rating</td><td>C</td><td>A</td></tr>
+<tr><td>Maintainability Rating</td><td>A (deuda 0 min)</td><td>A (deuda 0 min)</td></tr>
+<tr><td>Security Rating</td><td>A</td><td>A</td></tr>
+<tr><td>Líneas de código</td><td>238</td><td>270</td></tr>
+<tr><td>Quality Gate</td><td>Passed</td><td>Passed</td></tr>
+</table>
+<figure><img src="../evidencias/sonar-dashboard-v1.png" style="width:48%"> <img src="../evidencias/sonar-dashboard-final.png" style="width:48%"><figcaption>Figura 5. Dashboard SonarQube v1 (izq., fiabilidad C) y final (der., todo A)</figcaption></figure>
+<figure><img src="../evidencias/sonar-issues-final.png" style="width:70%"><figcaption>Figura 6. Issues SonarQube en la versión final: 0</figcaption></figure>
+<p><b>Interpretación técnica.</b> El código es pequeño, sin duplicación ni deuda técnica, por lo que la mantenibilidad es A. La fiabilidad C de v1 se debía únicamente a los dos campos sin etiqueta (Sonar los clasifica como bug de severidad media); al corregirlos pasa a A. La calificación de seguridad A y 0 hotspots no significan que la aplicación fuera segura: ZAP y las pruebas exploratorias encontraron 4 problemas de seguridad que el análisis estático no puede ver. La cobertura de 77,7% está por debajo del 80% recomendado por el Quality Gate “Sonar way” para código nuevo debido al frontend; la acción recomendada es instrumentar la prueba E2E o agregar pruebas unitarias de <code>public/app.js</code>.</p>
+
+<!-- 12. REFLEXIÓN -->
+<h1>12. Reflexión y Lecciones Aprendidas</h1>
+<p><b>Valor del aseguramiento de calidad.</b> Aunque TaskApp superaba todas sus pruebas funcionales básicas, el proceso de QA encontró 8 defectos, 2 de ellos altos (fuga de stack trace y fuerza bruta), que habrían llegado a producción. El valor del proceso estuvo en combinar técnicas: cada herramienta encontró cosas distintas (pruebas automatizadas → DEF-01; exploratorias → DEF-02/03; SonarQube → DEF-05; ZAP → DEF-06; revisión de código → DEF-04; E2E → DEF-07; npm audit → DEF-08).</p>
+<p><b>Problemas encontrados y retos técnicos.</b> (1) La corrección de un defecto (DEF-01) no fue completa y la re-ejecución de ZAP reveló DEF-06, lo que muestra la importancia de las pruebas de regresión. (2) Los resultados de rendimiento variaron casi al doble entre ejecuciones por carga del equipo, por lo que las mediciones deben hacerse en un ambiente controlado. (3) Configurar SonarQube en Docker requirió cambiar la contraseña por defecto y generar un token antes de poder escanear.</p>
+<p><b>Dificultades de automatización.</b> Probar el bloqueo de login exige aislar el estado entre pruebas (se usan usuarios distintos por prueba); las pruebas de interfaz necesitan esperas explícitas (<code>waitForFunction</code>) para no ser inestables; y la cobertura del frontend no se refleja en SonarQube sin instrumentación adicional.</p>
+<p><b>Aprendizajes.</b> Las técnicas de valores límite y partición de equivalencia permiten pocas pruebas con alta efectividad; una calificación A en SonarQube no garantiza seguridad; automatizar desde el inicio permitió re-ejecutar todo en segundos tras cada corrección.</p>
+<p><b>Trabajo en equipo.</b> Se dividieron roles (automatización, pruebas manuales/defectos, seguridad/métricas) y se usó Git para integrar el trabajo y dejar trazabilidad de cada corrección con el ID del defecto en el commit.</p>
+<p><b>Recomendaciones para futuros proyectos.</b> Definir requisitos no funcionales de seguridad desde el inicio (muchos defectos venían de requisitos implícitos), ejecutar SAST y DAST en el pipeline desde el primer commit, medir rendimiento en un ambiente dedicado, y usar un gestor de incidencias (GitHub Issues/Jira) con flujo de estados formal.</p>
+
+<!-- 13. ANEXOS -->
+<h1>13. Anexos</h1>
+<p><b>Repositorio:</b> <a href="https://github.com/JuanSebastianEcheverriGallego/aseguramientoRepo">https://github.com/JuanSebastianEcheverriGallego/aseguramientoRepo</a></p>
+<table>
+<tr><th>Tipo</th><th>Ruta en el repositorio</th></tr>
+<tr><td>Código fuente del sistema</td><td><code>src/</code>, <code>public/</code></td></tr>
+<tr><td>Scripts automatizados</td><td><code>tests/validators.test.js</code>, <code>tests/api.test.js</code>, <code>tests/ui-evidencias.js</code>, <code>perf/load.js</code>, <code>tests/manual-run.sh</code>, <code>tests/sonar-capturas.js</code>, <code>tests/zap-capturas.js</code></td></tr>
+<tr><td>Archivos de configuración</td><td><code>package.json</code>, <code>sonar-project.properties</code>, <code>.github/workflows/ci.yml</code>, <code>evidencias/zap.yaml</code></td></tr>
+<tr><td>Reportes exportados</td><td><code>evidencias/zap-v1.html</code>, <code>zap-v2.html</code>, <code>zap-final.html</code> (+ .json), <code>evidencias/*-sonar-metricas-*.txt</code></td></tr>
+<tr><td>Logs de ejecución</td><td><code>evidencias/01…16-*.log</code></td></tr>
+<tr><td>Capturas</td><td><code>evidencias/*.png</code></td></tr>
+<tr><td>Registro de defectos</td><td><code>docs/defectos.md</code></td></tr>
+<tr><td>Instrucciones de ejecución</td><td><code>README.md</code></td></tr>
+</table>
+<p><b>Recursos de apoyo:</b> OWASP Top 10 2021 (https://owasp.org/Top10/), ISO/IEC 25010, ISO/IEC/IEEE 29119-3, documentación de SonarQube (https://docs.sonarsource.com/), OWASP ZAP baseline (https://www.zaproxy.org/docs/docker/baseline-scan/), Node.js test runner (https://nodejs.org/api/test.html).</p>
+</body>
+</html>

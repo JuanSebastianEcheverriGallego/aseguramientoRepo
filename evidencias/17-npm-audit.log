@@ -1,0 +1,19 @@
+# npm audit report
+
+uuid  <11.1.1
+Severity: moderate
+uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided - https://github.com/advisories/GHSA-w5hq-g745-h8pq
+fix available via `npm audit fix --force`
+Will install autocannon@9.0.0, which is a breaking change
+node_modules/uuid
+  hyperid  <=1.2.0 || 1.3.1 - 3.3.0
+  Depends on vulnerable versions of uuid
+  node_modules/hyperid
+    autocannon  2.1.0 - 8.0.0
+    Depends on vulnerable versions of hyperid
+    node_modules/autocannon
+
+3 moderate severity vulnerabilities
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force

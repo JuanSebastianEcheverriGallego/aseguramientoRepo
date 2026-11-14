@@ -17,7 +17,7 @@
     "express": "^4.21.2"
   },
   "devDependencies": {
-    "autocannon": "^8.0.0",
+    "autocannon": "^9.0.0",
     "playwright-core": "^1.65.1"
   }
 }
