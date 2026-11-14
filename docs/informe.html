@@ -124,7 +124,7 @@
 <h1>5. Plan de Pruebas (basado en IEEE 829 / ISO/IEC/IEEE 29119-3)</h1>
 <table>
 <tr><td class="k">Identificador</td><td>PP-TASKAPP-2026-01</td></tr>
-<tr><td class="k">Elemento de prueba</td><td>TaskApp v1.0 (commit <code>f609bdb</code>) y versión corregida (commit <code>3976c92</code>)</td></tr>
+<tr><td class="k">Elemento de prueba</td><td>TaskApp v1.0 (commit <code>67ef4b6</code>) y versión corregida (commit <code>a33b8a3</code>)</td></tr>
 <tr><td class="k">Criterio de suspensión</td><td>El servidor no inicia o falla más del 50% de casos por causa de ambiente.</td></tr>
 <tr><td class="k">Criterio de salida</td><td>100% de casos ejecutados, 0 defectos críticos/altos abiertos, ZAP sin alertas Medias/Altas, Quality Gate de SonarQube aprobado.</td></tr>
 </table>
@@ -451,7 +451,7 @@ RNF01 (p95 &lt; 500 ms y 0 errores): CUMPLE</pre>
         uses: zaproxy/action-baseline@v0.14.0
       - uses: actions/upload-artifact@v4       (reporte de cobertura)</pre>
 <p>Flujo: <b>commit → pruebas unitarias/integración → despliegue efímero → carga → DAST → artefactos</b>. Como mejora, se puede agregar el paso <code>SonarSource/sonarqube-scan-action</code> apuntando a un servidor SonarQube accesible desde internet (o SonarQube Cloud) y bloquear el merge si el Quality Gate falla. Los resultados de cada ejecución quedan visibles en la pestaña <i>Actions</i> del repositorio.</p>
-<p><b>Evidencia de ejecución en CI.</b> Las primeras ejecuciones del pipeline (#1 a #4) fallaron en el paso de pruebas con <i>exit code 7</i>: en un clon limpio no existía la carpeta <code>coverage/</code> y el reporte LCOV no podía escribirse (en el equipo local sí existía, por eso no se había detectado). Se reprodujo el error clonando el repositorio en una carpeta vacía, se corrigió agregando el script <code>pretest:coverage</code> que crea la carpeta (commit <code>22c8555</code>) y la ejecución #5 terminó en <b>Success</b> con todos los pasos aprobados: pruebas, servidor, carga y ZAP (<a href="https://github.com/JuanSebastianEcheverriGallego/aseguramientoRepo/actions/runs/43654684513">ejecución #5</a>). Este caso muestra el valor del CI: detecta problemas de ambiente que no aparecen en la máquina del desarrollador.</p>
+<p><b>Evidencia de ejecución en CI.</b> Las primeras ejecuciones del pipeline (#1 a #4) fallaron en el paso de pruebas con <i>exit code 7</i>: en un clon limpio no existía la carpeta <code>coverage/</code> y el reporte LCOV no podía escribirse (en el equipo local sí existía, por eso no se había detectado). Se reprodujo el error clonando el repositorio en una carpeta vacía, se corrigió agregando el script <code>pretest:coverage</code> que crea la carpeta (commit <code>b1cc1cb</code>) y desde entonces el pipeline termina en <b>Success</b> con todos los pasos aprobados: pruebas, servidor, carga y ZAP (ver <a href="https://github.com/JuanSebastianEcheverriGallego/aseguramientoRepo/actions">pestaña Actions</a>). Este caso muestra el valor del CI: detecta problemas de ambiente que no aparecen en la máquina del desarrollador.</p>
 
 <!-- 9. DEFECTOS -->
 <h1>9. Gestión de Defectos</h1>
@@ -471,11 +471,11 @@ RNF01 (p95 &lt; 500 ms y 0 errores): CUMPLE</pre>
 <h2>9.1 Ciclo de vida de un defecto representativo: DEF-01</h2>
 <table>
 <tr><th>Estado</th><th>Fecha</th><th>Detalle</th></tr>
-<tr><td>Nuevo</td><td>14/11/2026</td><td>La prueba automatizada AT14 falla en el commit <code>f609bdb</code>: <code>'Express' !== null</code>. ZAP v1 lo confirma con 6 tipos de alerta.</td></tr>
+<tr><td>Nuevo</td><td>14/11/2026</td><td>La prueba automatizada AT14 falla en el commit <code>67ef4b6</code>: <code>'Express' !== null</code>. ZAP v1 lo confirma con 6 tipos de alerta.</td></tr>
 <tr><td>Asignado</td><td>14/11/2026</td><td>Asignado a Juan Sebastian Echeverri Gallego, severidad Medio (facilita reconocimiento y ataques de clickjacking/MIME sniffing), prioridad Alta (corrección simple, bajo riesgo).</td></tr>
 <tr><td>En corrección / Corregido</td><td>14/11/2026</td><td>Se deshabilita <code>x-powered-by</code> y se agrega un middleware con CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, COEP, COOP y Cache-Control.</td></tr>
 <tr><td>Verificado (parcial) → nuevo hallazgo</td><td>14/11/2026</td><td>AT14 pasa y ZAP v2 baja de 12 a 4 alertas, pero detecta que las respuestas 404 pierden la CSP → se registra DEF-06 vinculado.</td></tr>
-<tr><td>Cerrado</td><td>14/11/2026</td><td>Tras corregir DEF-06, ZAP final reporta 0 alertas Medias/Bajas y AT14 (ampliada para 404) pasa. Commit <code>3976c92</code>.</td></tr>
+<tr><td>Cerrado</td><td>14/11/2026</td><td>Tras corregir DEF-06, ZAP final reporta 0 alertas Medias/Bajas y AT14 (ampliada para 404) pasa. Commit <code>a33b8a3</code>.</td></tr>
 </table>
 
 <!-- 10. SEGURIDAD -->
