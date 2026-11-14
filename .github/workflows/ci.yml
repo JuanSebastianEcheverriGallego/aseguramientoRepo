@@ -1,0 +1,35 @@
+name: CI - Pruebas TaskApp
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Pruebas unitarias e integracion con cobertura
+        run: npm run test:coverage
+      - name: Levantar servidor
+        run: |
+          npm start &
+          npx --yes wait-on http://localhost:3000/api/health
+      - name: Prueba de carga (RNF01)
+        run: npm run perf
+      - name: OWASP ZAP baseline (DAST)
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: http://localhost:3000
+          allow_issue_writing: false
+          fail_action: false
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cobertura
+          path: coverage/

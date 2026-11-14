@@ -1,0 +1,122 @@
+=== MT01 Registro valido (usuario 3 chars, clave 8 chars) ===
+$ curl -X POST /api/register -d '{"username":"qa1","password":"Clave123"}'
+HTTP/1.1 201 Created
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+
+{"id":1,"username":"qa1"}
+
+
+=== MT02 Registro usuario 2 caracteres (limite invalido) ===
+$ curl -X POST /api/register -d '{"username":"qa","password":"Clave123"}'
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+
+{"error":"El usuario debe tener entre 3 y 20 caracteres"}
+
+
+=== MT03 Registro clave 7 caracteres (limite invalido) ===
+$ curl -X POST /api/register -d '{"username":"qa2","password":"Clave12"}'
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+
+{"error":"La contrasena debe tener entre 8 y 64 caracteres"}
+
+
+=== MT04 Login con clave incorrecta ===
+$ curl -X POST /api/login -d '{"username":"qa1","password":"Incorrecta1"}'
+HTTP/1.1 401 Unauthorized
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+
+{"error":"Credenciales invalidas"}
+
+
+=== MT05 Login correcto ===
+{"token":"c6b7ba996d06d653ea97f00ee014bc691d18eceab23a8ec84627f02e37ae72a5"}
+
+=== MT06 Crear tarea titulo 100 caracteres prioridad 5 ===
+$ curl -X POST /api/tasks -d '{"title":"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","priority":5}'
+HTTP/1.1 201 Created
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+
+{"id":1,"title":"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","priority":5,"done":false}
+
+
+=== MT07 Crear tarea titulo 101 caracteres ===
+$ curl -X POST /api/tasks -d '{"title":"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","priority":3}'
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+
+{"error":"El titulo no puede superar 100 caracteres"}
+
+
+=== MT08 Crear tarea prioridad 0 ===
+$ curl -X POST /api/tasks -d '{"title":"Prioridad cero","priority":0}'
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+
+{"error":"La prioridad debe ser un entero entre 1 y 5"}
+
+
+=== MT09 Marcar tarea 1 como completada y listar ===
+$ curl -X PATCH /api/tasks/1 -d '{"done":true}'
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+
+{"id":1,"done":true}
+
+
+$ curl -X GET /api/tasks 
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+
+[{"id":1,"title":"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","priority":5,"done":true,"created_at":"2026-11-14 22:40:48"}]
+
+
+=== MT10 Enviar JSON malformado ===
+$ curl -X POST /api/tasks -d '{"title": "sin cerrar'
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Content-Security-Policy: default-src 'none'
+X-Content-Type-Options: nosniff
+Content-Type: text/html; charset=utf-8
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>SyntaxError: Unterminated string in JSON at position 21 (line 1 column 22)<br> &nbsp; &nbsp;at JSON.parse (&lt;anonymous&gt;)<br> &nbsp; &nbsp;at parse (C:\Users\Wardthas\Documents\2026-2\aseguramiento\final\node_modules\body-parser\lib\types\json.js:96:19)<br> &nbsp; &nbsp;at C:\Users\Wardthas\Documents\2026-2\aseguramiento\final\node_modules\body-parser\lib\read.js:146:18<br> &nbsp; &nbsp;at AsyncResource.runInAsyncScope (node:async_hooks:214:14)<br> &nbsp; &nbsp;at invokeCallback (C:\Users\Wardthas\Documents\2026-2\aseguramiento\final\node_modules\raw-body\index.js:238:16)<br> &nbsp; &nbsp;at done (C:\Users\Wardthas\Documents\2026-2\aseguramiento\final\node_modules\raw-body\index.js:227:7)<br> &nbsp; &nbsp;at IncomingMessage.onEnd (C:\Users\Wardthas\Documents\2026-2\aseguramiento\final\node_modules\raw-body\index.js:287:7)<br> &nbsp; &nbsp;at IncomingMessage.emit (node:events:519:28)<br> &nbsp; &nbsp;at endReadableNT (node:internal/streams/readable:1698:12)<br> &nbsp; &nbsp;at process.processTicksAndRejections (node:internal/process/task_queues:90:21)</pre>
+</body>
+</html>
+
+
+=== MT11 (exploratoria) 15 intentos de login fallidos seguidos ===
+401 401 401 401 401 401 401 401 401 401 401 401 401 401 401 
+intento 16 con clave correcta:
+200
+=== MT12 (exploratoria) Logout invalida el token ===
+$ curl -X POST /api/logout 
+HTTP/1.1 204 No Content
+X-Powered-By: Express
+
+
+
+$ curl -X GET /api/tasks 
+HTTP/1.1 401 Unauthorized
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+
+{"error":"No autenticado"}
+
+
