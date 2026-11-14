@@ -4,8 +4,9 @@
   "description": "Gestor de tareas (TaskApp) - sistema bajo prueba del caso practico de Aseguramiento de la Calidad",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
     "test": "node --test --test-reporter=spec tests/*.test.js",
+    "pretest:coverage": "node -e \"require('fs').mkdirSync('coverage',{recursive:true})\"",
+    "start": "node src/server.js",
     "test:coverage": "node --test --experimental-test-coverage --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info tests/*.test.js",
     "perf": "node perf/load.js"
   },
