@@ -451,6 +451,7 @@ RNF01 (p95 &lt; 500 ms y 0 errores): CUMPLE</pre>
         uses: zaproxy/action-baseline@v0.14.0
       - uses: actions/upload-artifact@v4       (reporte de cobertura)</pre>
 <p>Flujo: <b>commit → pruebas unitarias/integración → despliegue efímero → carga → DAST → artefactos</b>. Como mejora, se puede agregar el paso <code>SonarSource/sonarqube-scan-action</code> apuntando a un servidor SonarQube accesible desde internet (o SonarQube Cloud) y bloquear el merge si el Quality Gate falla. Los resultados de cada ejecución quedan visibles en la pestaña <i>Actions</i> del repositorio.</p>
+<p><b>Evidencia de ejecución en CI.</b> Las primeras ejecuciones del pipeline (#1 a #4) fallaron en el paso de pruebas con <i>exit code 7</i>: en un clon limpio no existía la carpeta <code>coverage/</code> y el reporte LCOV no podía escribirse (en el equipo local sí existía, por eso no se había detectado). Se reprodujo el error clonando el repositorio en una carpeta vacía, se corrigió agregando el script <code>pretest:coverage</code> que crea la carpeta (commit <code>22c8555</code>) y la ejecución #5 terminó en <b>Success</b> con todos los pasos aprobados: pruebas, servidor, carga y ZAP (<a href="https://github.com/JuanSebastianEcheverriGallego/aseguramientoRepo/actions/runs/43654684513">ejecución #5</a>). Este caso muestra el valor del CI: detecta problemas de ambiente que no aparecen en la máquina del desarrollador.</p>
 
 <!-- 9. DEFECTOS -->
 <h1>9. Gestión de Defectos</h1>
