@@ -34,10 +34,8 @@
   <p><b>INSTITUCIÓN UNIVERSITARIA ITM</b><br>Ingeniería de Sistemas</p>
   <p style="margin-top:1.5cm"><b>ASEGURAMIENTO DE LA CALIDAD</b></p>
   <h1>Caso Práctico Final:<br>Aseguramiento de la calidad del sistema TaskApp</h1>
-  <p style="margin-top:2cm"><b>Integrantes</b><br>
-    [Nombre Integrante 1] – [Documento]<br>
-    [Nombre Integrante 2] – [Documento]<br>
-    [Nombre Integrante 3] – [Documento]</p>
+  <p style="margin-top:2cm"><b>Integrante</b><br>
+    Juan Sebastian Echeverri Gallego</p>
   <p style="margin-top:2cm">Medellín, noviembre de 2026</p>
   <p style="font-size:10pt">Repositorio: <a href="https://github.com/JuanSebastianEcheverriGallego/aseguramientoRepo">https://github.com/JuanSebastianEcheverriGallego/aseguramientoRepo</a></p>
 </div>
@@ -176,22 +174,22 @@
 <h2>5.6 Recursos</h2>
 <table>
 <tr><th>Tipo</th><th>Detalle</th></tr>
-<tr><td>Humanos</td><td>[Integrante 1]: líder de pruebas y automatización · [Integrante 2]: pruebas manuales y gestión de defectos · [Integrante 3]: seguridad y métricas</td></tr>
+<tr><td>Humanos</td><td>Juan Sebastian Echeverri Gallego: planeación, diseño y ejecución de pruebas, automatización, gestión de defectos, seguridad y métricas (rol único)</td></tr>
 <tr><td>Herramientas</td><td>node:test, Playwright 1.x (playwright-core) con Microsoft Edge, autocannon 8, curl, SonarQube Community (Docker) + sonar-scanner-cli, OWASP ZAP 2.17 (zap-baseline), GitHub, GitHub Actions</td></tr>
 <tr><td>Ambiente</td><td>Windows 11 Pro, Node.js 22.21, Docker Desktop 28.5, servidor local http://localhost:3000, SQLite en archivo</td></tr>
 </table>
 <h2>5.7 Cronograma</h2>
 <table>
 <tr><th>#</th><th>Actividad</th><th>Responsable</th><th>Fecha</th></tr>
-<tr><td>1</td><td>Selección del sistema y levantamiento de requisitos</td><td>Todo el equipo</td><td>09/11/2026</td></tr>
-<tr><td>2</td><td>Plan de pruebas y diseño de casos</td><td>[Integrante 1]</td><td>10/11/2026</td></tr>
-<tr><td>3</td><td>Implementación de pruebas automatizadas</td><td>[Integrante 1]</td><td>11/11/2026 – 12/11/2026</td></tr>
-<tr><td>4</td><td>Ejecución de pruebas manuales y exploratorias</td><td>[Integrante 2]</td><td>14/11/2026</td></tr>
-<tr><td>5</td><td>Prueba de carga</td><td>[Integrante 3]</td><td>14/11/2026</td></tr>
-<tr><td>6</td><td>Análisis SonarQube y OWASP ZAP (v1)</td><td>[Integrante 3]</td><td>14/11/2026</td></tr>
-<tr><td>7</td><td>Registro y corrección de defectos</td><td>[Integrante 2]</td><td>14/11/2026</td></tr>
-<tr><td>8</td><td>Re-ejecución (regresión) y verificación de correcciones</td><td>Todo el equipo</td><td>14/11/2026</td></tr>
-<tr><td>9</td><td>Métricas, informe y entrega</td><td>Todo el equipo</td><td>15/11/2026 – 22/11/2026</td></tr>
+<tr><td>1</td><td>Selección del sistema y levantamiento de requisitos</td><td>Juan Sebastian Echeverri Gallego</td><td>09/11/2026</td></tr>
+<tr><td>2</td><td>Plan de pruebas y diseño de casos</td><td>Juan Sebastian Echeverri Gallego</td><td>10/11/2026</td></tr>
+<tr><td>3</td><td>Implementación de pruebas automatizadas</td><td>Juan Sebastian Echeverri Gallego</td><td>11/11/2026 – 12/11/2026</td></tr>
+<tr><td>4</td><td>Ejecución de pruebas manuales y exploratorias</td><td>Juan Sebastian Echeverri Gallego</td><td>14/11/2026</td></tr>
+<tr><td>5</td><td>Prueba de carga</td><td>Juan Sebastian Echeverri Gallego</td><td>14/11/2026</td></tr>
+<tr><td>6</td><td>Análisis SonarQube y OWASP ZAP (v1)</td><td>Juan Sebastian Echeverri Gallego</td><td>14/11/2026</td></tr>
+<tr><td>7</td><td>Registro y corrección de defectos</td><td>Juan Sebastian Echeverri Gallego</td><td>14/11/2026</td></tr>
+<tr><td>8</td><td>Re-ejecución (regresión) y verificación de correcciones</td><td>Juan Sebastian Echeverri Gallego</td><td>14/11/2026</td></tr>
+<tr><td>9</td><td>Métricas, informe y entrega</td><td>Juan Sebastian Echeverri Gallego</td><td>15/11/2026 – 22/11/2026</td></tr>
 </table>
 
 <!-- 6. CASOS DE PRUEBA -->
@@ -473,7 +471,7 @@ RNF01 (p95 &lt; 500 ms y 0 errores): CUMPLE</pre>
 <table>
 <tr><th>Estado</th><th>Fecha</th><th>Detalle</th></tr>
 <tr><td>Nuevo</td><td>14/11/2026</td><td>La prueba automatizada AT14 falla en el commit <code>f609bdb</code>: <code>'Express' !== null</code>. ZAP v1 lo confirma con 6 tipos de alerta.</td></tr>
-<tr><td>Asignado</td><td>14/11/2026</td><td>Asignado a [Integrante 2], severidad Medio (facilita reconocimiento y ataques de clickjacking/MIME sniffing), prioridad Alta (corrección simple, bajo riesgo).</td></tr>
+<tr><td>Asignado</td><td>14/11/2026</td><td>Asignado a Juan Sebastian Echeverri Gallego, severidad Medio (facilita reconocimiento y ataques de clickjacking/MIME sniffing), prioridad Alta (corrección simple, bajo riesgo).</td></tr>
 <tr><td>En corrección / Corregido</td><td>14/11/2026</td><td>Se deshabilita <code>x-powered-by</code> y se agrega un middleware con CSP, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, COEP, COOP y Cache-Control.</td></tr>
 <tr><td>Verificado (parcial) → nuevo hallazgo</td><td>14/11/2026</td><td>AT14 pasa y ZAP v2 baja de 12 a 4 alertas, pero detecta que las respuestas 404 pierden la CSP → se registra DEF-06 vinculado.</td></tr>
 <tr><td>Cerrado</td><td>14/11/2026</td><td>Tras corregir DEF-06, ZAP final reporta 0 alertas Medias/Bajas y AT14 (ampliada para 404) pasa. Commit <code>3976c92</code>.</td></tr>
@@ -547,10 +545,10 @@ RNF01 (p95 &lt; 500 ms y 0 errores): CUMPLE</pre>
 <!-- 12. REFLEXIÓN -->
 <h1>12. Reflexión y Lecciones Aprendidas</h1>
 <p><b>Valor del aseguramiento de calidad.</b> Aunque TaskApp superaba todas sus pruebas funcionales básicas, el proceso de QA encontró 8 defectos, 2 de ellos altos (fuga de stack trace y fuerza bruta), que habrían llegado a producción. El valor del proceso estuvo en combinar técnicas: cada herramienta encontró cosas distintas (pruebas automatizadas → DEF-01; exploratorias → DEF-02/03; SonarQube → DEF-05; ZAP → DEF-06; revisión de código → DEF-04; E2E → DEF-07; npm audit → DEF-08).</p>
-<p><b>Problemas encontrados y retos técnicos.</b> (1) La corrección de un defecto (DEF-01) no fue completa y la re-ejecución de ZAP reveló DEF-06, lo que muestra la importancia de las pruebas de regresión. (2) Los resultados de rendimiento variaron casi al doble entre ejecuciones por carga del equipo, por lo que las mediciones deben hacerse en un ambiente controlado. (3) Configurar SonarQube en Docker requirió cambiar la contraseña por defecto y generar un token antes de poder escanear.</p>
+<p><b>Problemas encontrados y retos técnicos.</b> (1) La corrección de un defecto (DEF-01) no fue completa y la re-ejecución de ZAP reveló DEF-06, lo que muestra la importancia de las pruebas de regresión. (2) Los resultados de rendimiento variaron casi al doble entre ejecuciones por la carga del computador de pruebas, por lo que las mediciones deben hacerse en un ambiente controlado. (3) Configurar SonarQube en Docker requirió cambiar la contraseña por defecto y generar un token antes de poder escanear.</p>
 <p><b>Dificultades de automatización.</b> Probar el bloqueo de login exige aislar el estado entre pruebas (se usan usuarios distintos por prueba); las pruebas de interfaz necesitan esperas explícitas (<code>waitForFunction</code>) para no ser inestables; y la cobertura del frontend no se refleja en SonarQube sin instrumentación adicional.</p>
 <p><b>Aprendizajes.</b> Las técnicas de valores límite y partición de equivalencia permiten pocas pruebas con alta efectividad; una calificación A en SonarQube no garantiza seguridad; automatizar desde el inicio permitió re-ejecutar todo en segundos tras cada corrección.</p>
-<p><b>Trabajo en equipo.</b> Se dividieron roles (automatización, pruebas manuales/defectos, seguridad/métricas) y se usó Git para integrar el trabajo y dejar trazabilidad de cada corrección con el ID del defecto en el commit.</p>
+<p><b>Trabajo en equipo.</b> El trabajo fue realizado por un solo integrante, por lo que se asumieron todos los roles (analista, automatizador, probador de seguridad y gestor de defectos). Para compensar la falta de revisión cruzada se apoyó en la automatización y en herramientas independientes (SonarQube, ZAP, npm audit) como “segunda opinión”, y se usó Git para dejar trazabilidad de cada corrección con el ID del defecto en el commit. En un equipo se recomendaría que quien corrige un defecto no sea quien lo verifica.</p>
 <p><b>Recomendaciones para futuros proyectos.</b> Definir requisitos no funcionales de seguridad desde el inicio (muchos defectos venían de requisitos implícitos), ejecutar SAST y DAST en el pipeline desde el primer commit, medir rendimiento en un ambiente dedicado, y usar un gestor de incidencias (GitHub Issues/Jira) con flujo de estados formal.</p>
 
 <!-- 13. ANEXOS -->
