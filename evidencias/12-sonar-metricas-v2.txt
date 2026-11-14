@@ -1,0 +1,13 @@
+coverage = 77.4
+bugs = 0
+reliability_rating = 1.0
+code_smells = 0
+duplicated_lines_density = 0.0
+security_rating = 1.0
+ncloc = 268
+vulnerabilities = 0
+security_hotspots = 0
+sqale_index = 0
+sqale_rating = 1.0
+--- issues ---
+total 0

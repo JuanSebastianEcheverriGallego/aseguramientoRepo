@@ -87,4 +87,24 @@ test('AT14 cabeceras de seguridad presentes y sin X-Powered-By', async () => {
   assert.equal(r.headers.get('x-powered-by'), null);
   assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
   assert.ok(r.headers.get('content-security-policy'));
+  const notFound = await call('GET', '/no-existe');
+  assert.equal(notFound.status, 404);
+  assert.match(notFound.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+  assert.equal(notFound.headers.get('cross-origin-resource-policy'), 'same-origin');
+});
+
+test('AT15 JSON malformado devuelve 400 en JSON sin stack trace', async () => {
+  const res = await fetch(base + '/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"username": "x' });
+  const text = await res.text();
+  assert.equal(res.status, 400);
+  assert.ok(!text.includes('node_modules') && !text.includes('SyntaxError'));
+});
+
+test('AT16 bloqueo tras 5 intentos fallidos de login (valor limite 5/6)', async () => {
+  await call('POST', '/api/register', { username: 'gabo', password: 'Clave1234' });
+  for (let i = 1; i <= 4; i++) {
+    assert.equal((await call('POST', '/api/login', { username: 'gabo', password: 'mala' + i })).status, 401);
+  }
+  assert.equal((await call('POST', '/api/login', { username: 'gabo', password: 'mala5' })).status, 401); // 5o intento
+  assert.equal((await call('POST', '/api/login', { username: 'gabo', password: 'Clave1234' })).status, 429); // 6o bloqueado
 });

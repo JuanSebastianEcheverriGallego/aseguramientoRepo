@@ -1,0 +1,21 @@
+== ZAP v1
+Medium (High) | 10055 | CSP: Failure to Define Directive with No Fallback | instancias: 2
+Medium (High) | 10038 | Content Security Policy (CSP) Header Not Set | instancias: 2
+Medium (Medium) | 10020 | Missing Anti-clickjacking Header | instancias: 2
+Low (Medium) | 90004 | Cross-Origin-Embedder-Policy Header Missing or Invalid | instancias: 2
+Low (Medium) | 90004 | Cross-Origin-Opener-Policy Header Missing or Invalid | instancias: 2
+Low (Medium) | 90004 | Cross-Origin-Resource-Policy Header Missing or Invalid | instancias: 4
+Low (Medium) | 10063 | Permissions Policy Header Not Set | instancias: 5
+Low (Medium) | 10037 | Server Leaks Information via "X-Powered-By" HTTP Response Header Field(s) | instancias: 5
+Low (Medium) | 10021 | X-Content-Type-Options Header Missing | instancias: 4
+Informational (Medium) | 10109 | Modern Web Application | instancias: 2
+Informational (Medium) | 10049 | Storable and Cacheable Content | instancias: 2
+Informational (Medium) | 10049 | Storable but Non-Cacheable Content | instancias: 4
+== ZAP v2
+Medium (High) | 10055 | CSP: Failure to Define Directive with No Fallback | instancias: 1
+Low (Medium) | 90004 | Cross-Origin-Resource-Policy Header Missing or Invalid | instancias: 4
+Informational (Medium) | 10109 | Modern Web Application | instancias: 2
+Informational (Medium) | 10049 | Non-Storable Content | instancias: 5
+== ZAP final
+Informational (Medium) | 10109 | Modern Web Application | instancias: 2
+Informational (Medium) | 10049 | Non-Storable Content | instancias: 5

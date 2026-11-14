@@ -1,0 +1,24 @@
+✔ AT07 registro exitoso y usuario duplicado (RF01) (77.0516ms)
+✔ AT08 login correcto devuelve token y login incorrecto 401 (RF02) (100.132ms)
+✔ AT09 CRUD completo de tareas (RF03-RF06) (87.4808ms)
+✔ AT10 endpoints protegidos rechazan peticiones sin token (RNF03) (3.2197ms)
+✔ AT11 un usuario no puede modificar tareas de otro (control de acceso) (132.4804ms)
+✔ AT12 validacion de entrada en API: prioridad fuera de rango y titulo vacio -> 400 (68.7333ms)
+✔ AT13 inyeccion SQL en login no autentica (2.0323ms)
+✔ AT14 cabeceras de seguridad presentes y sin X-Powered-By (2.7412ms)
+✔ AT15 JSON malformado devuelve 400 en JSON sin stack trace (1.6032ms)
+✔ AT16 bloqueo tras 5 intentos fallidos de login (valor limite 5/6) (188.6071ms)
+✔ AT01 usuario - valores limite de longitud (2,3,20,21) (0.8236ms)
+✔ AT02 usuario - particiones de equivalencia (validos, caracteres especiales, tipo) (0.0773ms)
+✔ AT03 contrasena - valores limite (7,8,64,65) (0.2436ms)
+✔ AT04 titulo - limites (0, espacios, 1, 100, 101) (0.1357ms)
+✔ AT05 prioridad - limites (0,1,5,6) y clases invalidas (decimal, texto) (0.1071ms)
+✔ AT06 contrasenas se almacenan con hash y sal (RNF02) (125.3272ms)
+ℹ tests 16
+ℹ pass 16
+ℹ fail 0
+ℹ duration_ms 880.1305
+ℹ  app.js             |  97.04 |    80.39 |   93.75 | 72-73 91-92
+ℹ  validators.js      | 100.00 |    95.65 |  100.00 | 
+ℹ tests               |        |          |         | 
+ℹ all files           |  98.86 |    89.62 |   97.67 | 

@@ -4,6 +4,9 @@ const crypto = require('node:crypto');
 const { createDb } = require('./db');
 const v = require('./validators');
 
+const MAX_ATTEMPTS = 5;
+const LOCK_MS = 15 * 60 * 1000;
+
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
@@ -19,7 +22,25 @@ function verifyPassword(password, stored) {
 function createApp({ dbFile } = {}) {
   const db = createDb(dbFile);
   const sessions = new Map(); // token -> userId
+  const failedLogins = new Map(); // username -> { count, until }  (DEF-03)
   const app = express();
+
+  // DEF-01: ocultar tecnologia y agregar cabeceras de seguridad
+  app.disable('x-powered-by');
+  app.use((req, res, next) => {
+    res.set({
+      'Content-Security-Policy': "default-src 'self'; frame-ancestors 'none'; form-action 'self'",
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'no-referrer',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Resource-Policy': 'same-origin',
+      'Cache-Control': 'no-store',
+    });
+    next();
+  });
 
   app.use(express.json({ limit: '10kb' }));
   app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -50,10 +71,17 @@ function createApp({ dbFile } = {}) {
     if (typeof username !== 'string' || typeof password !== 'string') {
       return res.status(400).json({ error: 'Usuario y contrasena son obligatorios' });
     }
+    const attempts = failedLogins.get(username);
+    if (attempts && attempts.until > Date.now()) {
+      return res.status(429).json({ error: 'Demasiados intentos fallidos, intente de nuevo en 15 minutos' });
+    }
     const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
     if (!user || !verifyPassword(password, user.password_hash)) {
+      const count = (attempts?.count || 0) + 1;
+      failedLogins.set(username, { count: count >= MAX_ATTEMPTS ? 0 : count, until: count >= MAX_ATTEMPTS ? Date.now() + LOCK_MS : 0 });
       return res.status(401).json({ error: 'Credenciales invalidas' });
     }
+    failedLogins.delete(username);
     const token = crypto.randomBytes(32).toString('hex');
     sessions.set(token, user.id);
     res.json({ token });
@@ -90,6 +118,15 @@ function createApp({ dbFile } = {}) {
     const info = db.prepare('DELETE FROM tasks WHERE id = ? AND user_id = ?').run(Number(req.params.id), req.userId);
     if (info.changes === 0) return res.status(404).json({ error: 'Tarea no encontrada' });
     res.status(204).end();
+  });
+
+  // DEF-06: 404 propio para no usar el manejador por defecto (que reemplaza la CSP)
+  app.use((req, res) => res.status(404).json({ error: 'Recurso no encontrado' }));
+
+  // DEF-02: errores (ej. JSON malformado) sin exponer stack trace ni rutas internas
+  app.use((err, req, res, next) => {
+    const status = err.status || 500;
+    res.status(status).json({ error: status === 500 ? 'Error interno' : 'Solicitud invalida' });
   });
 
   return app;

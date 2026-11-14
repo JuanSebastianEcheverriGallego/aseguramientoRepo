@@ -1,0 +1,15 @@
+coverage = 74.3
+bugs = 2
+reliability_rating = 3.0
+code_smells = 0
+duplicated_lines_density = 0.0
+security_rating = 1.0
+ncloc = 238
+vulnerabilities = 0
+security_hotspots = 0
+sqale_index = 0
+sqale_rating = 1.0
+--- issues ---
+MAJOR | BUG | public/index.html : 26 | Associate a valid label to this input field.
+MAJOR | BUG | public/index.html : 27 | Associate a valid label to this input field.
+--- hotspots: 0 ---

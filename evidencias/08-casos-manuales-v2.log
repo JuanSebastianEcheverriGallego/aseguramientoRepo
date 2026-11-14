@@ -1,0 +1,195 @@
+=== MT01 Registro valido (usuario 3 chars, clave 8 chars) ===
+$ curl -X POST /api/register -d '{"username":"qa1","password":"Clave123"}'
+HTTP/1.1 201 Created
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+{"id":1,"username":"qa1"}
+
+
+=== MT02 Registro usuario 2 caracteres (limite invalido) ===
+$ curl -X POST /api/register -d '{"username":"qa","password":"Clave123"}'
+HTTP/1.1 400 Bad Request
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+{"error":"El usuario debe tener entre 3 y 20 caracteres"}
+
+
+=== MT03 Registro clave 7 caracteres (limite invalido) ===
+$ curl -X POST /api/register -d '{"username":"qa2","password":"Clave12"}'
+HTTP/1.1 400 Bad Request
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+{"error":"La contrasena debe tener entre 8 y 64 caracteres"}
+
+
+=== MT04 Login con clave incorrecta ===
+$ curl -X POST /api/login -d '{"username":"qa1","password":"Incorrecta1"}'
+HTTP/1.1 401 Unauthorized
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+{"error":"Credenciales invalidas"}
+
+
+=== MT05 Login correcto ===
+{"token":"aba8a9f7d44e5a63c7ac5d3836cea2df2687f5ad29bb3f3b3b77add09e17b285"}
+
+=== MT06 Crear tarea titulo 100 caracteres prioridad 5 ===
+$ curl -X POST /api/tasks -d '{"title":"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","priority":5}'
+HTTP/1.1 201 Created
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+{"id":1,"title":"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","priority":5,"done":false}
+
+
+=== MT07 Crear tarea titulo 101 caracteres ===
+$ curl -X POST /api/tasks -d '{"title":"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","priority":3}'
+HTTP/1.1 400 Bad Request
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+{"error":"El titulo no puede superar 100 caracteres"}
+
+
+=== MT08 Crear tarea prioridad 0 ===
+$ curl -X POST /api/tasks -d '{"title":"Prioridad cero","priority":0}'
+HTTP/1.1 400 Bad Request
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+{"error":"La prioridad debe ser un entero entre 1 y 5"}
+
+
+=== MT09 Marcar tarea 1 como completada y listar ===
+$ curl -X PATCH /api/tasks/1 -d '{"done":true}'
+HTTP/1.1 200 OK
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+{"id":1,"done":true}
+
+
+$ curl -X GET /api/tasks 
+HTTP/1.1 200 OK
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+[{"id":1,"title":"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT","priority":5,"done":true,"created_at":"2026-11-14 22:45:41"}]
+
+
+=== MT10 Enviar JSON malformado ===
+$ curl -X POST /api/tasks -d '{"title": "sin cerrar'
+HTTP/1.1 400 Bad Request
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+{"error":"Solicitud invalida"}
+
+
+=== MT11 (exploratoria) 15 intentos de login fallidos seguidos ===
+401 401 401 401 401 429 429 429 429 429 429 429 429 429 429 
+intento 16 con clave correcta:
+429
+=== MT12 (exploratoria) Logout invalida el token ===
+$ curl -X POST /api/logout 
+HTTP/1.1 204 No Content
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+
+
+
+$ curl -X GET /api/tasks 
+HTTP/1.1 401 Unauthorized
+Content-Security-Policy: default-src 'self'; frame-ancestors 'none'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: no-referrer
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cache-Control: no-store
+Content-Type: application/json; charset=utf-8
+
+{"error":"No autenticado"}
+
+
