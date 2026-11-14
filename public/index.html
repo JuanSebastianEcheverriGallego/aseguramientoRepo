@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TaskApp</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>TaskApp</h1>
+  <p id="msg" role="status"></p>
+
+  <section id="auth">
+    <h2>Ingresar</h2>
+    <form id="authForm">
+      <label>Usuario <input id="username" autocomplete="username" required></label>
+      <label>Contraseña <input id="password" type="password" autocomplete="current-password" required></label>
+      <button type="submit" id="loginBtn">Iniciar sesión</button>
+      <button type="button" id="registerBtn">Registrarse</button>
+    </form>
+  </section>
+
+  <section id="tasks" hidden>
+    <h2>Mis tareas <button id="logoutBtn">Salir</button></h2>
+    <form id="taskForm">
+      <input id="title" placeholder="Nueva tarea" maxlength="100" required>
+      <select id="priority">
+        <option value="1">1 - Muy baja</option><option value="2">2 - Baja</option>
+        <option value="3" selected>3 - Media</option><option value="4">4 - Alta</option>
+        <option value="5">5 - Urgente</option>
+      </select>
+      <button type="submit" id="addBtn">Agregar</button>
+    </form>
+    <ul id="list"></ul>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

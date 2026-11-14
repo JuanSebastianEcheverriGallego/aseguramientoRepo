@@ -1,0 +1,50 @@
+
+> taskapp@1.0.0 test
+> node --test --test-reporter=spec tests/*.test.js
+
+(node:31760) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ AT07 registro exitoso y usuario duplicado (RF01) (69.6388ms)
+✔ AT08 login correcto devuelve token y login incorrecto 401 (RF02) (102.0427ms)
+✔ AT09 CRUD completo de tareas (RF03-RF06) (75.8624ms)
+✔ AT10 endpoints protegidos rechazan peticiones sin token (RNF03) (3.1716ms)
+✔ AT11 un usuario no puede modificar tareas de otro (control de acceso) (128.4108ms)
+✔ AT12 validacion de entrada en API: prioridad fuera de rango y titulo vacio -> 400 (69.6888ms)
+✔ AT13 inyeccion SQL en login no autentica (2.0419ms)
+✖ AT14 cabeceras de seguridad presentes y sin X-Powered-By (2.9408ms)
+(node:20676) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ AT01 usuario - valores limite de longitud (2,3,20,21) (1.0851ms)
+✔ AT02 usuario - particiones de equivalencia (validos, caracteres especiales, tipo) (0.1088ms)
+✔ AT03 contrasena - valores limite (7,8,64,65) (0.0989ms)
+✔ AT04 titulo - limites (0, espacios, 1, 100, 101) (0.1506ms)
+✔ AT05 prioridad - limites (0,1,5,6) y clases invalidas (decimal, texto) (0.1057ms)
+✔ AT06 contrasenas se almacenan con hash y sal (RNF02) (127.2101ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 13
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 607.8838
+
+✖ failing tests:
+
+test at tests\api.test.js:85:1
+✖ AT14 cabeceras de seguridad presentes y sin X-Powered-By (2.9408ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'Express' !== null
+  
+      at TestContext.<anonymous> (C:\Users\Wardthas\Documents\2026-2\aseguramiento\final\tests\api.test.js:87:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async Test.run (node:internal/test_runner/test:1054:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:744:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Express',
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

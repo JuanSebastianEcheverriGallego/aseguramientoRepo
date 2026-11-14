@@ -1,0 +1,20 @@
+{
+  "name": "taskapp",
+  "version": "1.0.0",
+  "description": "Gestor de tareas (TaskApp) - sistema bajo prueba del caso practico de Aseguramiento de la Calidad",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test --test-reporter=spec tests/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info tests/*.test.js",
+    "perf": "node perf/load.js"
+  },
+  "engines": { "node": ">=22.13" },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "autocannon": "^8.0.0"
+  }
+}
