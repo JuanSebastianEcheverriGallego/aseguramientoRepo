@@ -12,7 +12,7 @@ Severidad: Crítico, Alto, Medio, Bajo. Prioridad: Alta, Media, Baja.
 | DEF-05 | Campos título/prioridad sin etiqueta accesible (WCAG 2 A) | Bajo | Media | Cerrado | SonarQube v1 | `evidencias/sonar-issues-v1.png` | 3976c92 |
 | DEF-06 | 404 por defecto de Express reemplaza la CSP; falta Cross-Origin-Resource-Policy | Bajo | Media | Cerrado | ZAP v2 (re-test DEF-01) | `evidencias/zap-v2.html` | 3976c92 |
 | DEF-07 | El selector de prioridad no vuelve a "3 - Media" después de agregar una tarea | Bajo | Baja | Abierto | AT17 (E2E) | `evidencias/ui-03-tareas.png` | — |
-| DEF-08 | autocannon 8 (devDependency) arrastra `uuid` vulnerable (GHSA-w5hq-g745-h8pq) | Bajo | Media | Cerrado | npm audit | `evidencias/17-npm-audit.log` | (este commit) |
+| DEF-08 | autocannon 8 (devDependency) arrastra `uuid` vulnerable (GHSA-w5hq-g745-h8pq) | Bajo | Media | Cerrado | npm audit | `evidencias/17-npm-audit.log` | 6450148 |
 
 ## Ciclo de vida DEF-01
 1. **Nuevo** – AT14 falla en f609bdb (`'Express' !== null`); ZAP v1 reporta 6 tipos de alerta relacionadas.

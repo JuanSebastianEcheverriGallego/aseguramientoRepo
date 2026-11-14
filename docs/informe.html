@@ -175,7 +175,7 @@
 <table>
 <tr><th>Tipo</th><th>Detalle</th></tr>
 <tr><td>Humanos</td><td>Juan Sebastian Echeverri Gallego: planeación, diseño y ejecución de pruebas, automatización, gestión de defectos, seguridad y métricas (rol único)</td></tr>
-<tr><td>Herramientas</td><td>node:test, Playwright 1.x (playwright-core) con Microsoft Edge, autocannon 8, curl, SonarQube Community (Docker) + sonar-scanner-cli, OWASP ZAP 2.17 (zap-baseline), GitHub, GitHub Actions</td></tr>
+<tr><td>Herramientas</td><td>node:test, Playwright 1.x (playwright-core) con Microsoft Edge, autocannon 9, curl, SonarQube Community (Docker) + sonar-scanner-cli, OWASP ZAP 2.17 (zap-baseline), GitHub, GitHub Actions</td></tr>
 <tr><td>Ambiente</td><td>Windows 11 Pro, Node.js 22.21, Docker Desktop 28.5, servidor local http://localhost:3000, SQLite en archivo</td></tr>
 </table>
 <h2>5.7 Cronograma</h2>
@@ -411,7 +411,7 @@ v2 MT10: HTTP/1.1 400 Bad Request  Content-Type: application/json  {"error":"Sol
 │ Latency │ 16 ms │ 23 ms │ 37 ms │ 40 ms │ 23.93 ms │ 5.54 ms │ 56 ms │   (v1)
 31k requests in 15.03s, 62.2 MB read
 RNF01 (p95 &lt; 500 ms y 0 errores): CUMPLE</pre>
-<p><b>Análisis.</b> La latencia p97.5 (cota superior del p95) está más de 10 veces por debajo del umbral de 500 ms y no hubo errores, por lo que el sistema es <b>estable</b> bajo esta carga. La diferencia v1→v2 no se debe a las correcciones (que agregan trabajo, no lo quitan) sino a que en v1 el equipo estaba descargando imágenes Docker en paralelo; esto muestra que los resultados de rendimiento dependen del ambiente y deben medirse en condiciones controladas. Limitación: SQLite sobre un único proceso no escala horizontalmente; con escrituras concurrentes intensas se esperaría degradación.</p>
+<p><b>Análisis.</b> La latencia p97.5 (cota superior del p95) está más de 10 veces por debajo del umbral de 500 ms y no hubo errores, por lo que el sistema es <b>estable</b> bajo esta carga. La diferencia v1→v2 no se debe a las correcciones (que agregan trabajo, no lo quitan) sino a que en v1 el computador de pruebas estaba descargando imágenes Docker en paralelo; esto muestra que los resultados de rendimiento dependen del ambiente y deben medirse en condiciones controladas. Limitación: SQLite sobre un único proceso no escala horizontalmente; con escrituras concurrentes intensas se esperaría degradación.</p>
 
 <h2>7.3 Pruebas no funcionales (estabilidad y usabilidad)</h2>
 <ul>
@@ -462,7 +462,7 @@ RNF01 (p95 &lt; 500 ms y 0 errores): CUMPLE</pre>
 <tr><td>DEF-02</td><td>Con JSON malformado la API devuelve el stack trace con rutas internas del servidor (fuga de información)</td><td>Alto</td><td>Alta</td><td>Cerrado</td><td>MT10, <code>02-casos-manuales-v1.log</code></td></tr>
 <tr><td>DEF-03</td><td>No existe protección contra fuerza bruta en el login: intentos ilimitados</td><td>Alto</td><td>Alta</td><td>Cerrado</td><td>MT11</td></tr>
 <tr><td>DEF-04</td><td>Los tokens de sesión no expiran y se guardan en memoria (se pierden al reiniciar; un token robado sirve indefinidamente)</td><td>Medio</td><td>Media</td><td>Diferido (abierto)</td><td>Revisión de código <code>src/app.js</code> (Map <code>sessions</code>)</td></tr>
-<tr><td>DEF-05</td><td>Los campos “título” y “prioridad” no tienen etiqueta asociada (accesibilidad WCAG 2 A)</td><td>Bajo</td><td>Media</td><td>Cerrado</td><td>SonarQube v1 (2 bugs), Figura 6</td></tr>
+<tr><td>DEF-05</td><td>Los campos “título” y “prioridad” no tienen etiqueta asociada (accesibilidad WCAG 2 A)</td><td>Bajo</td><td>Media</td><td>Cerrado</td><td>SonarQube v1 (2 bugs), Figura 3</td></tr>
 <tr><td>DEF-06</td><td>Las respuestas 404 usan el manejador por defecto de Express que reemplaza la CSP; falta <code>Cross-Origin-Resource-Policy</code></td><td>Bajo</td><td>Media</td><td>Cerrado</td><td>ZAP v2 (10055 en /robots.txt, 90004)</td></tr>
 <tr><td>DEF-07</td><td>Tras agregar una tarea, el selector de prioridad no vuelve a “3 - Media”, lo que puede inducir a crear tareas con prioridad errónea</td><td>Bajo</td><td>Baja</td><td>Abierto</td><td>Figura 2 (AT17)</td></tr>
 <tr><td>DEF-08</td><td>La dependencia de desarrollo autocannon 8 incluye <code>uuid</code> &lt;11.1.1 con vulnerabilidad moderada GHSA-w5hq-g745-h8pq (3 avisos en <code>npm audit</code>)</td><td>Bajo</td><td>Media</td><td>Cerrado</td><td><code>evidencias/17-npm-audit.log</code> → <code>18-npm-audit-final.log</code></td></tr>
@@ -561,7 +561,7 @@ RNF01 (p95 &lt; 500 ms y 0 errores): CUMPLE</pre>
 <tr><td>Scripts automatizados</td><td><code>tests/validators.test.js</code>, <code>tests/api.test.js</code>, <code>tests/ui-evidencias.js</code>, <code>perf/load.js</code>, <code>tests/manual-run.sh</code>, <code>tests/sonar-capturas.js</code>, <code>tests/zap-capturas.js</code></td></tr>
 <tr><td>Archivos de configuración</td><td><code>package.json</code>, <code>sonar-project.properties</code>, <code>.github/workflows/ci.yml</code>, <code>evidencias/zap.yaml</code></td></tr>
 <tr><td>Reportes exportados</td><td><code>evidencias/zap-v1.html</code>, <code>zap-v2.html</code>, <code>zap-final.html</code> (+ .json), <code>evidencias/*-sonar-metricas-*.txt</code></td></tr>
-<tr><td>Logs de ejecución</td><td><code>evidencias/01…16-*.log</code></td></tr>
+<tr><td>Logs de ejecución</td><td><code>evidencias/01…18-*.log</code></td></tr>
 <tr><td>Capturas</td><td><code>evidencias/*.png</code></td></tr>
 <tr><td>Registro de defectos</td><td><code>docs/defectos.md</code></td></tr>
 <tr><td>Instrucciones de ejecución</td><td><code>README.md</code></td></tr>
